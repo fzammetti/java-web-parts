@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+    "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+
+<module name="Checker">
+
+
+    <!-- This configuration set is capable of running all the checks -->
+    <!-- that CheckStyle is capable of, except for the header checks. -->
+    <!-- Those that do not apply to JavaWebParts have been commented out. -->
+
+
+  <!-- The following modules must have a Checker as their prent -->
+
+  <!-- Javadocs comments -->
+    <module name="PackageHtml" />
+
+  <!-- Miscellaneous -->
+    <!--<module name="NewlineAtEndOfFile" />-->
+    <module name="Translation" />
+
+  <!-- Duplicate code -->
+    <!--<module name="StrictDuplicateCode" />-->
+
+
+  <!-- The following modules must have a Treewalker as their parent -->
+
+  <module name="TreeWalker">
+
+    <!-- Javadocs comments -->
+      <module name="JavadocType" />
+      <module name="JavadocMethod">
+        <property name="allowUndeclaredRTE" value="true" />
+      </module>
+    <!-- Naming conventions -->
+      <module name="AbstractClassName" />
+      <module name="ConstantName" />
+      <module name="LocalFinalVariableName" />
+      <module name="LocalVariableName" />
+      <module name="MemberName" />
+      <module name="MethodName" />
+      <module name="PackageName" />
+      <module name="ParameterName" />
+      <module name="StaticVariableName" />
+      <module name="TypeName" />
+
+    <!-- Imports -->
+      <module name="AvoidStarImport" />
+      <module name="IllegalImport" />
+      <module name="RedundantImport" />
+      <module name="UnusedImports" />
+      <!--<module name="ImportOrder" />-->
+
+    <!-- Size violations -->
+      <!--<module name="ExecutableStatementCount" />-->
+      <module name="FileLength" />
+      <module name="LineLength">
+        <property name="ignorePattern" value="^import" />
+      </module>
+      <module name="MethodLength">
+        <property name="max"        value="250" />
+        <property name="countEmpty" value="false" />
+      </module>
+      <module name="AnonInnerLength" />
+      <module name="ParameterNumber" />
+
+    <!-- Whitespace -->
+      <!--<module name="EmptyForInitializerPad" />-->
+      <!--<module name="EmptyForIteratorPad" />-->
+      <module name="MethodParamPad" />
+      <module name="NoWhitespaceAfter" />
+      <module name="NoWhitespaceBefore" />
+      <!--<module name="OperatorWrap" />-->
+      <module name="ParenPad" />
+      <!--<module name="TypecastParenPad" />-->
+      <module name="TabCharacter" />
+      <!--<module name="WhitespaceAfter" />-->
+      <!--<module name="WhitespaceAround" />-->
+
+    <!-- Modifiers -->
+      <module name="ModifierOrder" />
+
+    <!-- Block checks -->
+      <module name="EmptyBlock" />
+      <module name="LeftCurly" />
+      <module name="NeedBraces" />
+      <module name="RightCurly" />
+      <module name="AvoidNestedBlocks" />
+
+    <!-- Coding -->
+      <module name="ArrayTrailingComma" />
+      <module name="AvoidInlineConditionals" />
+      <module name="CovariantEquals" />
+      <module name="DoubleCheckedLocking" />
+      <module name="EmptyStatement" />
+      <module name="EqualsHashCode" />
+      <!--<module name="FinalLocalVariable" />-->
+      <module name="HiddenField" />
+      <module name="IllegalInstantiation" />
+      <!--<module name="IllegalToken" />-->
+      <module name="IllegalTokenText" />
+      <module name="InnerAssignment" />
+      <!--<module name="MagicNumber" />-->
+      <module name="MissingSwitchDefault" />
+      <!--<module name="ModifiedControlVariable" />-->
+      <module name="RedundantThrows" />
+      <module name="SimplifyBooleanExpression" />
+      <module name="SimplifyBooleanReturn" />
+      <module name="StringLiteralEquality" />
+      <!--<module name="NestedIfDepth" />-->
+      <module name="NestedTryDepth" />
+      <module name="SuperClone" />
+      <module name="SuperFinalize" />
+      <module name="IllegalCatch">
+        <property name="severity" value="warning" />
+      </module>
+      <module name="PackageDeclaration" />
+      <module name="JUnitTestCase" />
+      <module name="ReturnCount">
+        <property name="max" value="5"/>
+      </module>
+      <!--<module name="IllegalType" />-->
+      <module name="DeclarationOrder" />
+      <module name="ParameterAssignment" />
+      <module name="ExplicitInitialization" />
+      <module name="DefaultComesLast" />
+      <!--<module name="MissingCtor" />-->
+      <module name="FallThrough" />
+      <!--<module name="MultipleStringLiterals" />-->
+      <module name="MultipleVariableDeclarations" />
+      <!--<module name="RequireThis" />-->
+      <module name="UnnecessaryParentheses" />
+
+    <!-- Class design -->
+      <module name="VisibilityModifier" />
+      <module name="FinalClass" />
+      <module name="InterfaceIsType" />
+      <module name="HideUtilityClassConstructor" />
+      <!--<module name="DesignForExtension" />-->
+      <module name="MutableException" />
+      <!--<module name="ThrowsCount" />  -->
+
+    <!-- Metrics -->
+      <module name="BooleanExpressionComplexity">
+        <property name="max" value="10" />
+      </module>
+      <module name="ClassDataAbstractionCoupling">
+        <property name="max" value="15" />
+      </module>
+      <module name="ClassFanOutComplexity">
+        <property name="max" value="30" />
+      </module>
+      <!--<module name="CyclomaticComplexity" />-->
+      <!--<module name="NPathComplexity" />-->
+      <!--<module name="JavaNCSS " />-->
+
+    <!-- Miscellaneous -->
+      <module name="TodoComment">
+        <property name="severity" value="warning" />
+      </module>
+      <module name="PackageDeclaration" />
+      <!--<module name="UncommentedMain" />-->
+      <module name="UpperEll" />
+      <module name="ArrayTypeStyle" />
+      <!--<module name="FinalParameters" />-->
+      <module name="DescendantToken" />
+      <!--<module name="Indentation" />-->
+      <!--<module name="TrailingComment" /> -->
+
+   </module>
+
+
+</module>

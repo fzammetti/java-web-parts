@@ -1,0 +1,113 @@
+<dependencies>
+
+  <!-- This is a sample configuration file used by the DependencyFilter. -->
+  <!-- This filter can be used to do a sort of IoC (Inversion Of Control) -->
+  <!-- function for a webapp by injecting objects which will be -->
+  <!-- automatically created and initialized into either request or session -->
+  <!-- scope for use by the webapp. -->
+
+  <!-- This bean is explicitly initialiazed with values here, and will be -->
+  <!-- created with each and every request (note no createForPaths -->
+  <!-- attribute). -->
+  <dependency scope="request" name="MyTestBean1">
+    <!-- The class of the bean. -->
+    <className>javawebparts.sampleapp.DFTestBean</className>
+    <!-- Call the setDOB() method of the bean with the arguments -->
+    <!-- February, 17 and 1973.  This call will be made AFTER all the -->
+    <!-- initializations are done. -->
+    <callMethod name="setDOB" arguments="February,17,1973" />
+    <!-- Set the firstName property of the bean. -->
+    <initProp name="firstName" value="Frank" />
+    <!-- Set the lastName property of the bean. -->
+    <initProp name="lastName" value="Zammetti" />
+    <!-- Set the IQ property of the bean.  Note that it isn't a String -->
+    <!-- in the bean. -->
+    <initProp name="iq" value="154" />
+    <!-- Add two items to the children List of the bean using the Javabean -->
+    <!-- spec-compliant method, setChildren() in this case. -->
+    <initList name="children">
+      <listItem value="Andrew" />
+      <listItem value="Michael" />
+    </initList>
+    <!-- Add an item to the children List of the bean using the  -->
+    <!-- addChild() method of the bean explicitly. -->
+    <initList name="children" method="addChild">
+      <listItem value="Ashley" />
+    </initList>
+    <!-- Add an item to the dimensions Map of the bean using the Javabean -->
+    <!-- spec-compliant method, setDimensions() in this case. -->
+    <initMap name="dimensions">
+      <mapItem key="height" value="5ft, 9in" />
+      <mapItem key="waist" value="32in" />
+    </initMap>
+    <!-- Add an item to the dimensions Map of the bean using the  -->
+    <!-- addDimension() method of the bean explicitly. -->
+    <initMap name="dimensions" method="addDimension">
+      <mapItem key="weight" value="185lbs" />
+    </initMap>
+    <!-- Add an items to the array field of the bean.  -->
+    <initArray name="certifications">
+      <arrayItem value="MCSD" />
+      <arrayItem value="SCJP" />
+      <arrayItem value="CNA" />
+      <arrayItem value="A+" />
+    </initArray>
+  </dependency>
+
+  <!-- This bean is initialized using the DFTestBeanInitClass class, and -->
+  <!-- will be created once per session. -->
+  <dependency scope="session" name="MyTestBean2">
+    <className>javawebparts.sampleapp.DFTestBean</className>
+    <initClass name="javawebparts.sampleapp.DFTestBeanInitClass"
+     method="initBean" />
+  </dependency>
+
+  <!-- This bean is initialized using the DFTestBeanInitClass class, and -->
+  <!-- will be created when it doesn't already exist in session or the -->
+  <!-- object in session is older than maxAge. -->
+  <dependency scope="session" name="MyTestBean3" maxAge="10">
+    <className>javawebparts.sampleapp.DFTestBean</className>
+    <initClass name="javawebparts.sampleapp.DFTestBeanInitClass"
+     method="initBean" />
+  </dependency>
+
+  <!-- This bean is explicitly initialiazed with values here, and will be -->
+  <!-- created for requests matching the stated path list only, which -->
+  <!-- in this case is a single page only. -->
+  <dependency scope="request" name="MyTestBean4"
+   createForPaths="*/filter/index.jsp">
+    <!-- The class of the bean. -->
+    <className>javawebparts.sampleapp.DFTestBean</className>
+    <!-- Set the firstName property of the bean. -->
+    <initProp name="firstName" value="Mitch" />
+    <!-- Set the lastName property of the bean. -->
+    <initProp name="lastName" value="Hedburg" />
+    <!-- Call the setDOB() method of the bean with the arguments -->
+    <!-- December, 20 and 1965.  This call will be made AFTER all the -->
+    <!-- initializations are done. -->
+    <callMethod name="setDOB" arguments="December,20,1965" />
+    <!-- Set the IQ property of the bean.  Note that it isn't a String -->
+    <!-- in the bean. -->
+    <!-- Set the eyeColor property of the bean. -->
+    <initProp name="eyeColor" value="Purple" />
+    <initProp name="iq" value="200" />
+    <!-- Add two items to the children List of the bean using the Javabean -->
+    <!-- spec-compliant method, setChildren() in this case. -->
+    <initList name="children">
+      <listItem value="Jack" />
+      <listItem value="Jill" />
+    </initList>
+    <!-- Add an item to the dimensions Map of the bean using the Javabean -->
+    <!-- spec-compliant method, setDimensions() in this case. -->
+    <initMap name="dimensions">
+      <mapItem key="height" value="7ft, 3in" />
+      <mapItem key="waist" value="70in" />
+      <mapItem key="weight" value="350" />
+    </initMap>
+    <!-- Add an items to the array field of the bean.  -->
+    <initArray name="certifications">
+      <arrayItem value="PMP" />
+    </initArray>
+  </dependency>
+
+</dependencies>

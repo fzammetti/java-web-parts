@@ -1,0 +1,33 @@
+a:active {
+  color            : #00ff00;
+}
+
+
+a:visited {
+  color            : #ff0000;
+}
+
+
+a:hover {
+  color            : #ffffff;
+  background-color : #00ff00;
+}
+
+
+.sectionHeader {
+  background-color : #017fff;
+  color            : #ffffff;
+  font-size        : 20pt;
+  font-weight      : bold;
+}
+
+
+.sectionContent {
+  background-color : #eaeaea;
+  font-size        : 14pt;
+}
+
+
+.footer {
+  font-size        : 10pt;
+}

@@ -1,0 +1,84 @@
+/*
+ * Copyright 2005 Herman van Rosmalen
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+package javawebparts.sampleapp;
+
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+
+/**
+ * This servlet tests the ability to use the std:Poster request handler in
+ * AjaxParts Taglib.
+ *
+ * @author <a href="mailto:herros@gmail.com">Herman van Rosmalen</a>
+ */
+public class AjaxPostTestServlet extends HttpServlet {
+
+
+  /**
+   * Log instance.
+   */
+  private static Log log = LogFactory.getLog(AjaxPostTestServlet.class);
+
+
+  /**
+   * doGet.  Not supported.
+   *
+   * @param  request          HTTPServletRequest.
+   * @param  response         HTTPServletResponse.
+   * @throws ServletException ServletException.
+   * @throws IOException      IOException.
+   */
+  public void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+
+    log.info("doGet() executed, calling doPost...");
+    doPost(request, response);
+
+  } // End doGet().
+
+
+  /**
+   * doPost.
+   *
+   * @param request           HTTPServletRequest.
+   * @param response          HTTPServletResponse.
+   * @throws ServletException ServletException.
+   * @throws IOException      IOException.
+   */
+  public void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+
+    log.info("AjaxPostTestServlet.doPost()...");
+    String text1 = request.getParameter("text1");
+    String text2 = request.getParameter("text2");
+    PrintWriter out = response.getWriter();
+    out.println("text1 = " + text1 + "\n\ntext2 = " + text2);
+
+  } // End doPost().
+
+
+} // End class.

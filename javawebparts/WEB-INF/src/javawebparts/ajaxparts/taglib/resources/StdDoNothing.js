@@ -1,0 +1,2 @@
+function StdDoNothing(ajCall, resParam) {
+}

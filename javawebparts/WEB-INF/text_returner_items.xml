@@ -1,0 +1,9 @@
+<!-- This is a sample data file for the TextReturnerServlet. -->
+<TextReturnerServletItems>
+  <item>0 - It's always darkest before the dawn</item>
+  <item>1 - A journey of a thousand miles begins with a single step</item>
+  <item>2 - The universe is like stupidity: both are infinite... and actually, I'm not sure about the universe</item>
+  <item>3 - I believe there is intelligent life in the universe, except for some parts of New Jersey</item>
+  <item>4 - If your falling of a cliff, you might as well try and fly</item>
+  <item>5 - The cost of life is to chance the consequence</item>
+</TextReturnerServletItems>

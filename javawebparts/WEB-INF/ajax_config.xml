@@ -1,0 +1,169 @@
+<ajaxConfig>
+
+  <!-- Custom error handlers -->
+  <handler name="alertErrorHandlerElement" type="error">
+    <location>local</location>
+    <function>alertErrorHandlerElement</function>
+  </handler>
+  <handler name="alertErrorHandlerEvent" type="error">
+    <location>local</location>
+    <function>alertErrorHandlerEvent</function>
+  </handler>
+
+  <!-- Normal AJAX request and inline tags test -->
+  <group ajaxRef="TestGroup1" preProc="testPre" postProc="testPost"
+    form="parent" async="true">
+    <element ajaxRef="Button1">
+      <event type="onclick" preProc="" postProc="">
+        <requestHandler type="std:SimpleRequest" target="response_g1b1.jsp">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:InnerHTML">
+          <parameter>ajaxPartsTaglibResults1</parameter>
+        </responseHandler>
+      </event>
+    </element>
+    <element ajaxRef="Button2" async="false">
+      <event type="onclick">
+        <requestHandler type="std:SimpleRequest" target="response_g1b2.jsp">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:InnerHTML">
+          <parameter>ajaxPartsTaglibResults1</parameter>
+        </responseHandler>
+        <responseHandler type="std:InnerHTML" matchPattern="/^r2ok/">
+          <parameter>ajaxPartsTaglibResults2</parameter>
+        </responseHandler>
+      </event>
+    </element>
+  </group>
+
+  <!-- These test the error handlers -->
+  <group ajaxRef="TestGroup2">
+    <errorHandler code="404" type="std:AlertErrorHandler" />
+    <element ajaxRef="Button1">
+      <event type="onclick">
+        <requestHandler type="std:SimpleRequest" target="dummy">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:InnerHTML">
+          <parameter>ajaxPartsTaglibResults1</parameter>
+        </responseHandler>
+      </event>
+    </element>
+    <element ajaxRef="Button2">
+      <errorHandler code="404" type="alertErrorHandlerElement" />
+      <event type="onclick">
+        <requestHandler type="std:SimpleRequest" target="dummy">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:InnerHTML">
+          <parameter>ajaxPartsTaglibResults2</parameter>
+        </responseHandler>
+      </event>
+    </element>
+    <element ajaxRef="Button3">
+      <event type="onclick">
+        <errorHandler code="404" type="alertErrorHandlerEvent" />
+        <requestHandler type="std:SimpleRequest" target="dummy">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:InnerHTML">
+          <parameter>ajaxPartsTaglibResults2</parameter>
+        </responseHandler>
+      </event>
+    </element>
+    <element ajaxRef="RedirecterButton1">
+      <event type="onclick">
+        <requestHandler type="std:SimpleRequest" target="/redirecterTestServlet">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:Redirecter">
+          <parameter />
+        </responseHandler>
+      </event>
+    </element>
+    <element ajaxRef="RedirecterButton2">
+      <event type="onclick">
+        <requestHandler type="std:SimpleRequest" target="/redirecterTestServlet">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:Redirecter">
+          <parameter>http://www.cnn.com</parameter>
+        </responseHandler>
+      </event>
+    </element>
+    <element ajaxRef="Popup">
+      <event type="onclick">
+        <requestHandler type="std:SimpleRequest" target="/textReturner">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:WindowOpener">
+          <parameter>MyWindow~height=300,width=150,toolbar=no,scrollbars=no,menubar=no</parameter>
+        </responseHandler>
+      </event>
+    </element>
+  </group>
+
+  <!-- Button rendered as part of AJAX call response -->
+  <group ajaxRef="TestGroup3">
+    <element ajaxRef="Button1">
+      <event type="onclick">
+        <requestHandler type="std:SimpleRequest" target="response_g3b1.jsp">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:Alerter">
+          <parameter />
+        </responseHandler>
+      </event>
+    </element>
+    <!-- Button rendered to test the manual tag -->
+    <element ajaxRef="Manual1">
+      <event type="manual">
+        <requestHandler type="std:SimpleRequest" target="response_manual1.jsp">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:InnerHTML">
+          <parameter>ajaxPartsTaglibResults1</parameter>
+        </responseHandler>
+      </event>
+    </element>
+    <element ajaxRef="Manual2">
+      <event type="manual" form="TestForm" method="get">
+        <requestHandler type="std:QueryString" target="/ajaxPostTest">
+          <parameter>text1=text1,text2=text2</parameter>
+        </requestHandler>
+        <responseHandler type="std:InnerHTML">
+          <parameter>ajaxPartsTaglibResults1</parameter>
+        </responseHandler>
+      </event>
+    </element>
+    <!-- Button rendered to test the timer tag -->
+    <element ajaxRef="Timer1">
+      <event type="timer">
+        <requestHandler type="std:SimpleRequest" target="response_timer1.jsp">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:InnerHTML">
+          <parameter>ajaxPartsTaglibResults2</parameter>
+        </responseHandler>
+      </event>
+    </element>
+  </group>
+
+  <!-- JSON-P (cross-domain AJAX) tests -->
+  <group ajaxRef="jsonp">
+    <element ajaxRef="btnJSONP">
+      <event type="onclick">
+        <requestHandler type="std:SendByID" jsonp="true"
+          target="http://api.local.yahoo.com/MapsService/V1/mapImage?appid=YahooDemo&amp;image_type=gif&amp;output=json&amp;callback=jsonpCallback">
+          <parameter>querystring,location.value</parameter>
+        </requestHandler>
+        <responseHandler type="std:DoNothing">
+          <parameter />
+        </responseHandler>
+      </event>
+    </element>
+  </group>
+
+</ajaxConfig>

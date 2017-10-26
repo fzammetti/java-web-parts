@@ -1,0 +1,130 @@
+body {
+	margin: 0px; padding: 0px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;	     
+}
+div, p, p1, ul, h1, h2, img {
+	margin: 0px; padding: 0px;
+}
+h1, h3 {
+	padding-bottom: 18px; 
+	font-family: Georgia, "Times New Roman", Times, serif;	
+	color: #663300; letter-spacing: 0.2em;	
+	font-weight: bold;      
+}
+ul {
+	list-style-type:none;
+}
+a {
+	text-decoration: none;
+}
+p {
+	margin: 0 0 1em;
+	font-size: 0.75em;
+	letter-spacing: 0.09em;
+	color: #000000;
+	line-height: 1.8;	
+}
+.textlinks a{
+	color: #003399;      
+}
+#MainPan {
+	position:relative;
+	margin:0 auto;
+}
+#TopPan {
+	width:1195px; position:relative;
+	margin:0 auto;
+}
+/*---Top Header Panel---*/
+#header {
+	width:1195px; height:130px;
+	position:relative;
+	margin:0 auto;      
+}
+#header p.slogan {	
+	top:105px; left:470px; 
+	font-size: 12px; position: absolute;
+	font-weight: bold; letter-spacing: 2px;
+	font-family: Arial, Helvetica, sans-serif;	
+}
+#topbodyleftPan {
+	width: 253px; float:left;
+	padding: 44px 14px 0px 2px;	
+}
+#topbodyleftPan ul{	
+	width: 252px; float:left;
+	border-right:2px dotted #0033FF;
+}
+
+#topbodyleftPan ul li{
+	width: 206px; height: 28px; 	
+}
+#topbodyleftPan ul li a{
+	width: 200px; padding: 0px 7px 10px 0px;      
+	font-size: 0.7em; font-weight: bold;
+	text-transform: uppercase;
+}
+#topbodyleftPan li.second_part{
+	margin-top: 4.0em; 	
+}
+#topbodyleftPan a{
+	color: #003399;
+}
+#topbodyleftPan a:hover {
+	text-decoration: underline; color: #003399;
+}
+#topbodyrightPan{		
+	width: 722px; float: left;
+	padding: 44px 2px 0px 0px;		
+}
+#topbodyrightPan p {
+        width: 600px;	
+}
+#one #two{		
+	width: 184px; float:left;
+}
+#one ul{		
+	width: 182px; padding: 4px 0px 0px 0px;
+}
+#one ul li{		
+	width: 180px; font-size: 0.8em;
+        color: #663300;
+	padding: 0px 0px 18px 0px;
+}
+#one li.first_reg{	
+	padding: 18px 0px 8px 0px;
+        white-space: pre;
+}
+#one li.next_reg{	
+	padding: 0px 0px 8px 0px;
+        white-space: pre;
+}
+#one li.laast_reg{	
+	padding: 0px 0px 18px 0px;
+        white-space: pre;
+}
+#topbodyrightPan span {
+	font-weight: bold;
+}
+#topbodyrightPan h1 {
+	padding-bottom: 10px; 
+	font-family: Georgia, "Times New Roman", Times, serif;	
+	color: #663300;
+	font-weight: bold;
+	font-size: 1.2em;
+	letter-spacing: 0.10em;		
+}
+#topbodyrightPan h2 {
+             width: 600px;
+	padding: 10px 0px 10px 0px;        
+	font-family: Arial, Helvetica, sans-serif;	
+	color: #000000;
+	font-weight: bold;
+	font-size: 0.75em;
+	letter-spacing: 0.09em;	
+	line-height: 1.8;
+}	
+#topbodyrightPan h3 {	
+	font-size: 1.2em;
+	padding-bottom: 1px; 	
+}

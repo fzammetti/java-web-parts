@@ -1,0 +1,45 @@
+<!-- A Chain configuration file example to go along with the sample app. -->
+<!-- Note that the ChainManager, which is the class responsible for      -->
+<!-- parsing this file, expects to find this file always named           -->
+<!-- chain_config.xml somewhere in the classpath.  In a wenapp this is   -->
+<!-- most easily accomplished by placing it in WEB-INF/classes.  The     -->
+<!-- JWP build script copies this file from WEB-INF/src to               -->
+<!-- WEB-INF/classes as part of its normal processing, that's why this   -->
+<!-- isn't simply in WEB-INf with the other config files.                -->
+<chainConfig>
+
+  <!-- This Catalog demonstrates basic functionality. -->
+  <catalog id="catalog1">
+    <!-- First Chain in this Catalog. -->
+    <chain id="chain1">
+      <command id="add1ToA" className="javawebparts.sampleapp.chain.Add1ToACommand" />
+      <command id="add1ToB" className="javawebparts.sampleapp.chain.Add1ToBCommand" />
+      <command id="divideABy2" className="javawebparts.sampleapp.chain.DivideABy2Command" />
+      <command id="divideBBy2" className="javawebparts.sampleapp.chain.DivideBBy2Command" />
+      <!-- The following Command is actually another Chain (a "subchain"). -->
+      <command id="chain1a" chain="chain1a" />
+      <command id="multiplyAByB" className="javawebparts.sampleapp.chain.MultiplyAByBCommand" />
+      <!-- The following Command shows how Commands can have properties. -->
+      <command id="multiplyByX" className="javawebparts.sampleapp.chain.MultiplyByXCommand">
+        <property id="factor" value="3" />
+      </command>
+    </chain>
+    <!-- Second Chain in this Catalog. -->
+    <chain id="chain1a">
+      <command id="subtract2FromA" className="javawebparts.sampleapp.chain.Subtract2FromACommand" />
+      <command id="subtract2FromB" className="javawebparts.sampleapp.chain.Subtract2FromBCommand" />
+    </chain>
+    <!-- Third Chain in this Catalog.  Used to demonstrate looping. -->
+    <chain id="loopChain">
+      <command id="add1ToA" className="javawebparts.sampleapp.chain.Add1ToACommand" />
+      <command id="loopStart" className="javawebparts.misc.chain.commands.LoopStartCommand">
+        <property id="indexStart" value="1" />
+        <property id="indexEnd" value="4" />
+      </command>
+        <command id="add5ToB" className="javawebparts.sampleapp.chain.Add5ToBCommand" />
+      <command id="loopEnd" className="javawebparts.misc.chain.commands.LoopEndCommand" />
+      <command id="multiplyAByB" className="javawebparts.sampleapp.chain.MultiplyAByBCommand" />
+    </chain>
+  </catalog>
+
+</chainConfig>

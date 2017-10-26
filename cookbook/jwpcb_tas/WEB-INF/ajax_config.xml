@@ -1,0 +1,24 @@
+<ajaxConfig>
+  <!-- Define a single group. -->
+	<group ajaxRef="TypeAheadSuggestionsForm">
+	  <!-- Only the textbox is Ajax-enabled. -->
+		<element ajaxRef="enteredTextChange">
+		  <!-- Any time a key is pressed (released actually), fire an event. -->
+			<event type="onkeyup">
+			  <!-- Just going to submit a simple query string with a single -->
+			  <!-- parameter, enteredText, that will take the value of the -->
+			  <!-- enteredTextbox element of the form. -->
+				<requestHandler type="std:QueryString" method="get">
+					<target>typeAheadSuggestions</target>
+					<parameter>enteredText=enteredTextbox</parameter>
+				</requestHandler>
+				<!-- When we get back, just insert the returned results into the -->
+				<!-- div named suggestions on the page, which contains the -->
+				<!-- matching suggestions. -->
+				<responseHandler type="std:InnerHTML">
+					<parameter>suggestions</parameter>
+				</responseHandler>
+			</event>
+		</element>
+	</group>
+</ajaxConfig>

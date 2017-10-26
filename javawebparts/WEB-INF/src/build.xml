@@ -1,0 +1,819 @@
+<project name="Java Web Parts" default="build" basedir="." >
+
+
+  <!-- Note: This build script is assumed to be in WEB-INF/src, with WEB-INF -->
+  <!-- being in the root of the sample webapp.  As long as that is the case, -->
+  <!-- it should, in theory, Just Work(tm) as-is. -->
+
+
+  <!-- Get all the properties for this build. -->
+  <property file="build.properties" />
+  <property file="build_control.properties" />
+
+
+  <!-- Construct the classpath for our compile step.  These are JARs that -->
+  <!-- must be present during com;ilation AND execution.  The findbugs -->
+  <!-- JAR is an exception though... it IS NOT needed at runtime, but it -->
+  <!-- cannot be dynamically gotten from the repo, it has to be here. -->
+  <path id="runtime_classpath">
+    <pathelement location="${basedir}/findbugs-ant.jar" />
+    <pathelement location="${lib}/commons-logging.jar" />
+    <pathelement location="${lib}/activation.jar" />
+    <pathelement location="${lib}/mailapi.jar" />
+    <pathelement location="${lib}/smtp.jar" />
+  </path>
+
+
+  <!-- **************************************************************** -->
+  <!-- **************************************************************** -->
+  <!-- This is the target that executes, all the rest are antcalled.    -->
+  <!-- **************************************************************** -->
+  <!-- **************************************************************** -->
+  <target name="build">
+    <get_dependencies />
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+      <classpath refid="compiletime_classpath" />
+    </taskdef>
+    <if>
+      <not>
+        <isset property="nogui" />
+      </not>
+      <then>
+        <set_props />
+      </then>
+      <else>
+        <echo message="Skipping set_props" />
+      </else>
+    </if>
+    <antcall target="startup" inheritRefs="true" />
+    <antcall target="clean" inheritRefs="true" />
+    <antcall target="init" inheritRefs="true" />
+    <antcall target="compile" inheritRefs="true" />
+    <antcall target="unit_tests" inheritRefs="true" />
+    <antcall target="logging" inheritRefs="true" />
+    <antcall target="classpath_files" inheritRefs="true" />
+    <antcall target="make_javadocs" inheritRefs="true" />
+    <antcall target="make_jars" inheritRefs="true" />
+    <antcall target="checkstyle" inheritRefs="true" />
+    <antcall target="pmd" inheritRefs="true" />
+    <antcall target="jlint" inheritRefs="true" />
+    <antcall target="findbugs" inheritRefs="true" />
+  </target>
+
+
+  <!-- **************************************************************** -->
+  <!-- Build startup details.                                           -->
+  <!-- **************************************************************** -->
+  <target name="startup">
+    <!-- Startup informational messages -->
+    <tstamp>
+      <format property="build.datetime"
+       pattern="MMMMMMMMM d, yyyy @ hh:mma z" />
+    </tstamp>
+    <echo message="JavaWebParts build process begun ${build.datetime}..." />
+    <echo message="os.name            : ${os.name}" />
+    <echo message="basedir            : ${basedir}" />
+    <echo message="ant.file           : ${ant.file}" />
+    <echo message="ant.java.version   : ${ant.java.version}" />
+    <echo message="ant.project.name   : ${ant.project.name}" />
+    <echo message="project_version    : ${project_version}" />
+    <echo message="proxy_host         : ${proxy_host}" />
+    <echo message="proxy_port         : ${proxy_port}" />
+    <echo message="root               : ${root}" />
+    <echo message="temp               : ${temp}" />
+    <echo message="test_src_dir       : ${test_src_dir}" />
+    <echo message="test_build_dir     : ${test_build_dir}" />
+    <echo message="lib                : ${lib}" />
+    <echo message="javadocs           : ${javadocs}" />
+    <echo message="jswat              : ${jswat}" />
+    <echo message="tools              : ${tools}" />
+  </target>
+
+
+  <!-- **************************************************************** -->
+  <!-- Download compile-time dependencies from iBiblio into Maven       -->
+  <!-- repository directory.  This has to be a macrodef in order        -->
+  <!-- for the compiletime_classpath to be available to the other       -->
+  <!-- targets that antcall'd from the build target.  These JARs are    -->
+  <!-- only needed during compilation, not execution.                   -->
+  <!-- **************************************************************** -->
+  <macrodef name="get_dependencies">
+    <sequential>
+      <echo message="Retrieving compile-time dependencies..." />
+      <setproxy proxyhost="${proxy_host}" proxyport="${proxy_port}" />
+      <typedef classpath="${basedir}/ant-dependencies.jar"
+       resource="dependencies.properties" />
+        <dependencies pathId="compiletime_classpath" verbose="true">
+          <!-- Servlet/JSP dependencies -->
+          <dependency group="servletapi" version="2.3" />
+          <!-- Checkstyle dependencies -->
+          <dependency group="checkstyle" version="3.4" />
+          <dependency group="antlr" version="2.7.5" />
+          <dependency group="regexp" version="1.3" />
+          <dependency group="commons-beanutils" version="1.7.0" />
+          <!-- PMD dependencies -->
+          <dependency group="pmd" version="3.2" />
+          <dependency group="jaxen" version="1.0-FCS-full" />
+          <dependency group="saxpath" version="1.0-FCS" />
+          <!-- Ant-contrib dependencies. -->
+          <dependency group="ant-contrib" version="20020829" />
+        </dependencies>
+        <!-- Test-related dependencies. -->
+        <dependencies pathId="test_classpath" verbose="true">
+          <dependency group="junit" version="3.8.1" />
+          <dependency group="jmock" version="1.0.1" />
+          <dependency group="org.springframework" artifact="spring-core" version="2.0-m4" />
+          <dependency group="org.springframework" artifact="spring-mock" version="2.0-rc3" />
+        </dependencies>
+      <echo message="Done" />
+    </sequential>
+  </macrodef>
+
+
+  <!-- **************************************************************** -->
+  <!-- Get/Set build control properties.                                -->
+  <!-- **************************************************************** -->
+  <macrodef name="set_props">
+    <sequential>
+      <echo message="Setting build control properties..." />
+      <taskdef name="antform" classname="com.sardak.antform.AntForm"
+        classpath="antform.jar" />
+      <antform title="" save="build_control.properties"
+       image="../../img/header1.gif" resetMessage="" okMessage="Build">
+        <label>Check off the tasks you wish to execute for this build, or close the window to abort the build.  During development, the minimal set of tasks you generally will want to always execute is do_compile, do_classpath_files and do_make_jars.</label>
+        <separator />
+         <booleanProperty
+          label="Compile all JWP code (do_compile)"
+          property="do_compile" />
+        <booleanProperty
+          label="Copy files that must be in classpath to WEB-INF/classes (do_classpath_files)"
+        property="do_classpath_files" />
+          <booleanProperty label="Make JARs for all JWP packages (do_make_jars)"
+          property="do_make_jars" />
+        <separator />
+        <booleanProperty
+          label="Copy debug logging config files to WEB-INF/classes.  Note: VERY verbose! (do_logging)"
+          property="do_logging" />
+        <separator />
+        <booleanProperty
+          label="Run all unit tests (do_unit_test)"
+          property="do_unit_test" />
+        <separator />
+        <booleanProperty
+          label="Make Javadocs for all JWP packages (do_make_javadocs)"
+          property="do_make_javadocs" />
+        <separator />
+        <booleanProperty
+          label="Static code analysis with CheckStyle (do_checkstyle)"
+          property="do_checkstyle" />
+        <booleanProperty label="Static code analysis with PMD (do_pmd)"
+          property="do_pmd" />
+        <booleanProperty label="Static code analysis with JLint.  Note: Windows only, and must compile! (do_jlint)"
+          property="do_jlint" />
+        <booleanProperty label="Static code analysis with FindBugs. Note: Must compile! (do_findbugs)"
+          property="do_findbugs" />
+        </antform>
+      <echo message="Done" />
+    </sequential>
+  </macrodef>
+
+
+  <!-- **************************************************************** -->
+  <!-- Initialize for build.                                            -->
+  <!-- **************************************************************** -->
+  <target name="init">
+    <mkdir dir="${temp}" />
+    <mkdir dir="${test_build_dir}" />
+  </target>
+
+
+  <!-- **************************************************************** -->
+  <!-- Compile everything.                                              -->
+  <!-- **************************************************************** -->
+  <target name="compile">
+    <if>
+      <equals arg1="${do_compile}" arg2="true" />
+      <then>
+        <echo message="Compiling..." />
+        <javac srcdir="${basedir}" destdir="${temp}" deprecation="false"
+         target="1.4" source="1.4" debug="true" debuglevel="lines,vars,source"
+         encoding="iso-8859-1">
+          <classpath refid="runtime_classpath" />
+          <classpath refid="compiletime_classpath" />
+        </javac>
+        <echo message="Done" />
+      </then>
+      <else>
+        <echo message="Skipping do_compile" />
+      </else>
+    </if>
+  </target>
+
+
+  <!-- **************************************************************** -->
+  <!-- Run all the unit tests from the test/unit directory              -->
+  <!-- **************************************************************** -->
+  <target name="unit_tests">
+    <if>
+      <equals arg1="${do_unit_test}" arg2="true" />
+      <then>
+        <echo message="Compiling the unit tests..." />
+        <javac srcdir="${test_src_dir}" destdir="${test_build_dir}" deprecation="false"
+         target="1.4" source="1.4" debug="true" debuglevel="lines,vars,source"
+         encoding="iso-8859-1">
+	        <classpath path="${temp}" />
+          <classpath refid="runtime_classpath" />
+          <classpath refid="compiletime_classpath" />
+          <classpath refid="test_classpath" />
+        </javac>
+
+        <echo message="Running the unit tests..." />
+        <junit fork="yes" haltonfailure="yes">
+          <classpath path="${temp}" />
+          <classpath path="${test_build_dir}" />
+          <classpath refid="test_classpath" />
+          <classpath refid="runtime_classpath" />
+          <classpath refid="compiletime_classpath" />
+
+          <batchtest>
+	          <formatter type="plain" usefile="false" />
+	          <fileset dir="${test_src_dir}">
+	            <include name="**/*Test.java" />
+	            <exclude name="**/AllTests.java" />
+	          </fileset>
+	        </batchtest>
+	      </junit>
+        <echo message="Done" />
+      </then>
+      <else>
+        <echo message="Skipping do_unit_test" />
+      </else>
+    </if>
+  </target>
+
+
+  <!-- **************************************************************** -->
+  <!-- Enable logging for development.                                  -->
+  <!-- **************************************************************** -->
+  <target name="logging">
+    <if>
+      <equals arg1="${do_logging}" arg2="true" />
+      <then>
+        <echo message="Enabling logging for development..." />
+        <copy file="${basedir}/commons-logging.properties"
+         toFile="${root}/WEB-INF/classes/commons-logging.properties"
+         overwrite="true" />
+        <copy file="${basedir}/simplelog.properties"
+         toFile="${root}/WEB-INF/classes/simplelog.properties"
+         overwrite="true" />
+        <echo message="Done" />
+      </then>
+      <else>
+        <echo message="Skipping do_logging" />
+      </else>
+    </if>
+  </target>
+
+
+  <!-- **************************************************************** -->
+  <!-- Copy over any files that need to be in the classpath into        -->
+  <!-- WEB-INF/classes.                                                 -->
+  <!-- **************************************************************** -->
+  <target name="classpath_files">
+    <if>
+      <equals arg1="${do_classpath_files}" arg2="true" />
+      <then>
+        <echo message="Copying files in the classpath..." />
+        <copy file="${basedir}/chain_config.xml"
+         toFile="${root}/WEB-INF/classes/chain_config.xml"
+         overwrite="true" />
+        <copy file="${basedir}/chain_config_2.xml"
+         toFile="${root}/WEB-INF/classes/chain_config_2.xml"
+         overwrite="true" />
+        <echo message="Done" />
+      </then>
+      <else>
+        <echo message="Skipping do_classpath_files" />
+      </else>
+    </if>
+  </target>
+
+
+  <!-- **************************************************************** -->
+  <!-- Generate javadocs.                                               -->
+  <!-- **************************************************************** -->
+  <target name="make_javadocs">
+    <if>
+      <equals arg1="${do_make_javadocs}" arg2="true" />
+      <then>
+        <echo message="Making Javadocs..." />
+        <delete dir="${javadocs}" />
+        <mkdir dir="${javadocs}" />
+        <javadoc sourcepath="${basedir}"
+         overview="${basedir}/javadoc_overview.htm"
+         destdir="${javadocs}"
+         excludepackagenames="javawebparts.core.org.*,javawebparts.sampleapp."
+         packagenames="*"
+         author="true"
+         private="true"
+         version="true"
+         encoding="iso-8859-1"
+         windowtitle="${ant.project.name} API Documentation"
+         doctitle="&lt;h1&gt;${ant.project.name}&lt;br&gt;Version ${project_version}&lt;/h1&gt;"
+         bottom="Copyright &#169; 2005 Frank W. Zammetti">
+         <classpath refid="runtime_classpath" />
+         <classpath refid="compiletime_classpath" />
+        </javadoc>
+        <echo message="Done" />
+      </then>
+      <else>
+        <echo message="Skipping do_make_javadocs" />
+      </else>
+    </if>
+  </target>
+
+
+  <!-- **************************************************************** -->
+  <!-- Create JARs and put them in WEB-INF/lib.                         -->
+  <!-- **************************************************************** -->
+  <target name="make_jars">
+    <if>
+      <equals arg1="${do_make_jars}" arg2="true" />
+      <then>
+        <echo message="Making JAR files..." />
+        <!-- ajaxparts -->
+        <delete dir="${temp}/META-INF/tlds" />
+        <mkdir dir="${temp}/META-INF/tlds" />
+        <copy file="${basedir}/tlds/javawebparts_ajaxparts.tld"
+         toFile="${temp}/META-INF/tlds/javawebparts_ajaxparts.tld"
+         overwrite="true" />
+        <copy todir="${temp}/javawebparts/ajaxparts/taglib/resources">
+          <fileset dir="${basedir}/javawebparts/ajaxparts/taglib/resources" />
+        </copy>
+        <jar
+         destfile="${lib}/javawebparts-ajaxparts-${project_version_filename}.jar"
+         basedir="${temp}"
+         includes="META-INF/**,javawebparts/ajaxparts/**" />
+        <!-- context -->
+        <jar
+         destfile="${lib}/javawebparts-context-${project_version_filename}.jar"
+         basedir="${temp}"
+         includes="javawebparts/context/**" />
+        <!-- core -->
+        <jar destfile="${lib}/javawebparts-core-${project_version_filename}.jar"
+         basedir="${temp}"
+         includes="javawebparts/core/**" />
+        <!-- filter -->
+        <jar
+         destfile="${lib}/javawebparts-filter-${project_version_filename}.jar"
+         basedir="${temp}"
+         includes="javawebparts/filter/**" />
+        <!-- listener -->
+        <jar
+         destfile="${lib}/javawebparts-listener-${project_version_filename}.jar"
+         basedir="${temp}"
+         includes="javawebparts/listener/**" />
+        <!-- misc -->
+        <jar destfile="${lib}/javawebparts-misc-${project_version_filename}.jar"
+         basedir="${temp}"
+         includes="javawebparts/misc/**" />
+        <!-- request -->
+        <jar
+         destfile="${lib}/javawebparts-request-${project_version_filename}.jar"
+         basedir="${temp}"
+         includes="javawebparts/request/**" />
+        <!-- response -->
+        <jar
+         destfile="${lib}/javawebparts-response-${project_version_filename}.jar"
+         basedir="${temp}"
+         includes="javawebparts/response/**" />
+        <!-- servlet -->
+        <jar
+         destfile="${lib}/javawebparts-servlet-${project_version_filename}.jar"
+         basedir="${temp}"
+         includes="javawebparts/servlet/**" />
+        <!-- session -->
+        <jar
+         destfile="${lib}/javawebparts-session-${project_version_filename}.jar"
+         basedir="${temp}"
+         includes="javawebparts/session/**" />
+        <!-- taglib -->
+        <delete dir="${temp}/META-INF/tlds" />
+        <mkdir dir="${temp}/META-INF/tlds" />
+        <copy file="${basedir}/tlds/javawebparts_basicstr.tld"
+         toFile="${temp}/META-INF/tlds/javawebparts_basicstr.tld"
+         overwrite="true" />
+        <copy file="${basedir}/tlds/javawebparts_jstags.tld"
+         toFile="${temp}/META-INF/tlds/javawebparts_jstags.tld"
+         overwrite="true" />
+        <copy file="${basedir}/tlds/javawebparts_uiwidgets.tld"
+         toFile="${temp}/META-INF/tlds/javawebparts_uiwidgets.tld"
+         overwrite="true" />
+        <jar
+         destfile="${lib}/javawebparts-taglib-${project_version_filename}.jar"
+         basedir="${temp}"
+         includes="META-INF/**,javawebparts/*,javawebparts/taglib/**" />
+        <!-- sampleapp -->
+        <jar destfile="${lib}/javawebparts-sampleapp.jar" basedir="${temp}"
+         includes="javawebparts/*,javawebparts/sampleapp/**" />
+        <echo message="Done" />
+      </then>
+      <else>
+        <echo message="Skipping do_make_jars" />
+      </else>
+    </if>
+  </target>
+
+
+  <!-- **************************************************************** -->
+  <!-- Performs static code analysis using CheckStyle.                  -->
+  <!-- **************************************************************** -->
+  <target name="checkstyle">
+    <if>
+      <equals arg1="${do_checkstyle}" arg2="true" />
+      <then>
+        <echo message="Performing static code analysis using CheckStyle..." />
+        <taskdef resource="checkstyletask.properties">
+          <classpath refid="runtime_classpath" />
+          <classpath refid="compiletime_classpath" />
+        </taskdef>
+        <checkstyle config="${basedir}/checkstyle_checks.xml"
+         failOnViolation="false" failureProperty="checkstyle_failed">
+          <classpath refid="runtime_classpath" />
+          <classpath refid="compiletime_classpath" />
+          <classpath path="${temp}" />
+          <fileset dir="${basedir}" includes="**/*.java"
+           excludes="javawebparts/core/org/**,javawebparts/sampleapp/**" />
+          <formatter type="xml" toFile="${basedir}/checkstyle_results.xml" />
+        </checkstyle>
+        <echo message="Done" />
+        <if>
+          <equals arg1="${checkstyle_failed}" arg2="true" />
+          <then>
+            <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" />
+            <echo message="!!!                            !!!" />
+            <echo message="!!! Checkstyle check(s) failed !!!" />
+            <echo message="!!!                            !!!" />
+            <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" />
+          </then>
+        </if>
+       </then>
+      <else>
+        <echo message="Skipping do_checkstyle" />
+      </else>
+    </if>
+  </target>
+
+
+  <!-- **************************************************************** -->
+  <!-- Performs static code analysis using PMD.                         -->
+  <!-- **************************************************************** -->
+  <target name="pmd">
+    <if>
+      <equals arg1="${do_pmd}" arg2="true" />
+      <then>
+        <echo message="Performing static code analysis using PMD..." />
+        <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask">
+          <classpath refid="runtime_classpath" />
+          <classpath refid="compiletime_classpath" />
+        </taskdef>
+        <pmd rulesetfiles="rulesets/basic.xml,rulesets/braces.xml,rulesets/clone.xml,rulesets/codesize.xml,rulesets/controversial.xml,rulesets/coupling.xml,rulesets/design.xml,rulesets/finalizers.xml,rulesets/imports.xml,rulesets/javabeans.xml,rulesets/junit.xml,rulesets/naming.xml,rulesets/optimizations.xml,rulesets/strictexception.xml,rulesets/strings.xml,rulesets/unusedcode.xml">
+          <fileset dir="${basedir}" includes="**/*.java"
+           excludes="javawebparts/core/**" />
+          <formatter type="xml" toFile="${basedir}/pmd_results.xml" />
+        </pmd>
+        <echo message="Done" />
+      </then>
+      <else>
+        <echo message="Skipping do_pmd" />
+      </else>
+    </if>
+  </target>
+
+
+  <!-- **************************************************************** -->
+  <!-- Performs static code analysis using JLint.                       -->
+  <!-- **************************************************************** -->
+  <target name="jlint">
+    <if>
+      <equals arg1="${do_jlint}" arg2="true" />
+      <then>
+        <echo message="Performing static code analysis using JLint..." />
+        <delete file="jlint_results.txt" />
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\ajaxparts\taglib\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\ajaxparts\config\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\context\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\core\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\filter\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\listener\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\misc\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\misc\chain\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\misc\chain\commands\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\request\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\response\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\servlet\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\session\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\taglib\basicstr\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\taglib\jstags\*.class" />
+        </exec>
+        <exec executable="jlint.exe" dir="temp"
+         append="true" output="jlint_results.txt">
+          <arg value="javawebparts\taglib\uiwidgets\*.class" />
+        </exec>
+        <echo message="Done" />
+      </then>
+      <else>
+        <echo message="Skipping do_jlint" />
+      </else>
+    </if>
+  </target>
+
+
+  <!-- **************************************************************** -->
+  <!-- Performs static code analysis using JLint.                       -->
+  <!-- **************************************************************** -->
+  <target name="findbugs">
+    <if>
+      <equals arg1="${do_findbugs}" arg2="true" />
+      <then>
+        <echo message="Performing static code analysis using FindBugs..." />
+        <delete file="findbugs_results.xml" />
+        <taskdef name="findbugs"
+          classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
+          <classpath refid="runtime_classpath" />
+        </taskdef>
+        <findbugs home="." output="xml"
+          outputFile="findbugs_results.xml" >
+          <sourcePath path="." />
+          <auxClasspath refid="runtime_classpath" />
+          <auxClasspath refid="compiletime_classpath" />
+          <class location="temp" />
+        </findbugs>
+        <echo message="Done" />
+      </then>
+      <else>
+        <echo message="Skipping do_findbugs" />
+      </else>
+    </if>
+  </target>
+
+  <!-- **************************************************************** -->
+  <!-- This target performs cleanup tasks.  It is always called at the  -->
+  <!-- start of a build, and it should ALWAYS be manually executed      -->
+  <!-- before a checkin to source control.                              -->
+  <!-- **************************************************************** -->
+  <target name="clean">
+    <echo message="Cleaning up..." />
+    <delete dir="${temp}" />
+    <delete dir="${test_build_dir}" />
+    <delete dir="${root}/WEB-INF/classes" />
+    <delete>
+      <fileset dir="${lib}" includes="javawebparts-*.jar" />
+    </delete>
+    <delete file="${root}/RCFSaveFile.csv" />
+    <delete file="${basedir}/checkstyle_results.xml" />
+    <delete file="${basedir}/pmd_results.xml" />
+    <delete file="${basedir}/jlint_results.txt" />
+    <delete file="${basedir}/findbugs_results.xml" />
+    <delete file="${basedir}/build_log.xml" />
+    <delete dir="${javadocs}" />
+    <echo message="Done" />
+  </target>
+
+
+  <!-- [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] -->
+  <!-- [] OPTIONAL TARGET: Create the two distribution files.  Note that [] -->
+  <!-- [] the results of the build process before this target will       [] -->
+  <!-- [] effectively be undone by this target running, i.e., all logs,  [] -->
+  <!-- [] JARs, etc. that are created before this will be removed by the [] -->
+  <!-- [] call to the "clean" target that happens as part of this        [] -->
+  <!-- [] target.                                                        [] -->
+  <!-- [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] -->
+  <target name="distro">
+    <echo message="Making distros..." />
+    <antcall target="clean" inheritRefs="true" />
+    <echo message="Be sure to select the following tasks:"/>
+    <echo message="do_compile, do_classpath_files, do_make_jars and do_make_javadocs" />
+    <antcall target="build" inheritRefs="true" />
+    <echo message="BIN distro..." />
+      <delete dir="${distro_dir}/javawebparts" />
+      <delete file="${distro_dir}/javawebparts-${project_version_filename}-bin.zip" />
+      <mkdir dir="${distro_dir}/javawebparts" />
+      <copy toDir="${distro_dir}/javawebparts">
+        <fileset dir="${root}">
+          <exclude name="**/*src*/" />
+          <exclude name="**/*test*/" />
+        </fileset>
+      </copy>
+      <zip destfile="${distro_dir}/javawebparts-${project_version_filename}-bin.zip"
+       basedir="${distro_dir}">
+        <include name="javawebparts/**" />
+      </zip>
+      <checksum file="${distro_dir}/javawebparts-${project_version_filename}-bin.zip"
+       forceOverwrite="yes"/>
+    <echo message="SRC distro..." />
+      <antcall target="clean" inheritRefs="true" />
+      <delete dir="${distro_dir}/javawebparts" />
+      <delete file="${distro_dir}/javawebparts-${project_version_filename}-src.zip" />
+      <mkdir dir="${distro_dir}/javawebparts" />
+      <copy toDir="${distro_dir}/javawebparts">
+        <fileset dir="${root}">
+          <exclude name="**/*javawebparts*.jar*/" />
+        </fileset>
+      </copy>
+      <zip destfile="${distro_dir}/javawebparts-${project_version_filename}-src.zip"
+       basedir="${distro_dir}">
+        <include name="javawebparts/**" />
+      </zip>
+      <checksum file="${distro_dir}/javawebparts-${project_version_filename}-src.zip"
+       forceOverwrite="yes"/>
+      <delete dir="${distro_dir}/javawebparts" />
+    <echo message="Done" />
+  </target>
+
+
+  <!-- [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] -->
+  <!-- [] OPTIONAL TARGET:  Start the JSwat debugger and set up to       [] -->
+  <!-- [] debug JWP.                                                     [] -->
+  <!-- [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] -->
+  <target name="debug">
+    <echo message="Starting JSwat..." />
+      <exec dir="${root}" executable="java" spawn="true">
+        <arg line="-cp ${jswat}/jswat.jar;${tools}\tools.jar -Djava.source.path=${basedir} com.bluemarsh.jswat.Main" />
+      </exec>
+    <echo message="Done" />
+  </target>
+
+
+  <!-- [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] -->
+  <!-- [] OPTIONAL TARGET:  Build upload bundles for the Maven           [] -->
+  <!-- [] repository at iBiblio.  This uses the pom.xml files found in   [] -->
+  <!-- {} src/maven.                                                     [] -->
+  <!-- [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] -->
+  <target name="maven-repo">
+    <echo message="Creating Maven Repository Packages..." />
+    <echo message="REMEMBER THAT EVERYTHING HAS TO BE BUILT FIRST OR THIS WON'T WORK!" />
+    <delete dir="${distro_dir}/maven" />
+    <mkdir dir="${distro_dir}/maven" />
+    <delete dir="${distro_dir}/maven/temp" />
+    <mkdir dir="${distro_dir}/maven/temp" />
+    <!-- AjaxParts -->
+    <copy file="${lib}/javawebparts-ajaxparts-${project_version_filename}.jar"
+      toFile="${distro_dir}/maven/temp/javawebparts-ajaxparts-${project_version_filename}.jar"
+      overwrite="true" />
+    <copy file="maven/pom_ajaxparts.xml"
+      toFile="${distro_dir}/maven/temp/pom.xml" overwrite="true" />
+    <replace file="${distro_dir}/maven/temp/pom.xml" token="?????"
+      value="${project_version_filename}" />
+    <jar destfile="${distro_dir}/maven/javawebparts-ajaxparts-${project_version_filename}.jar"
+     basedir="${distro_dir}/maven/temp" includes="javawebparts-ajaxparts-${project_version_filename}.jar,pom.xml" />
+    <!-- Context -->
+    <copy file="${lib}/javawebparts-context-${project_version_filename}.jar"
+      toFile="${distro_dir}/maven/temp/javawebparts-context-${project_version_filename}.jar"
+      overwrite="true" />
+    <copy file="maven/pom_context.xml"
+      toFile="${distro_dir}/maven/temp/pom.xml" overwrite="true" />
+    <replace file="${distro_dir}/maven/temp/pom.xml" token="?????"
+      value="${project_version_filename}" />
+    <jar destfile="${distro_dir}/maven/javawebparts-context-${project_version_filename}.jar"
+     basedir="${distro_dir}/maven/temp" includes="javawebparts-context-${project_version_filename}.jar,pom.xml" />
+    <!-- Core -->
+    <copy file="${lib}/javawebparts-core-${project_version_filename}.jar"
+      toFile="${distro_dir}/maven/temp/javawebparts-core-${project_version_filename}.jar"
+      overwrite="true" />
+    <copy file="maven/pom_core.xml"
+      toFile="${distro_dir}/maven/temp/pom.xml" overwrite="true" />
+    <replace file="${distro_dir}/maven/temp/pom.xml" token="?????"
+      value="${project_version_filename}" />
+    <jar destfile="${distro_dir}/maven/javawebparts-core-${project_version_filename}.jar"
+     basedir="${distro_dir}/maven/temp" includes="javawebparts-core-${project_version_filename}.jar,pom.xml" />
+    <!-- Filter -->
+    <copy file="${lib}/javawebparts-filter-${project_version_filename}.jar"
+      toFile="${distro_dir}/maven/temp/javawebparts-filter-${project_version_filename}.jar"
+      overwrite="true" />
+    <copy file="maven/pom_filter.xml"
+      toFile="${distro_dir}/maven/temp/pom.xml" overwrite="true" />
+    <replace file="${distro_dir}/maven/temp/pom.xml" token="?????"
+      value="${project_version_filename}" />
+    <jar destfile="${distro_dir}/maven/javawebparts-filter-${project_version_filename}.jar"
+     basedir="${distro_dir}/maven/temp" includes="javawebparts-filter-${project_version_filename}.jar,pom.xml" />
+    <!-- Listener -->
+    <copy file="${lib}/javawebparts-listener-${project_version_filename}.jar"
+      toFile="${distro_dir}/maven/temp/javawebparts-listener-${project_version_filename}.jar"
+      overwrite="true" />
+    <copy file="maven/pom_listener.xml"
+      toFile="${distro_dir}/maven/temp/pom.xml" overwrite="true" />
+    <replace file="${distro_dir}/maven/temp/pom.xml" token="?????"
+      value="${project_version_filename}" />
+    <jar destfile="${distro_dir}/maven/javawebparts-listener-${project_version_filename}.jar"
+     basedir="${distro_dir}/maven/temp" includes="javawebparts-listener-${project_version_filename}.jar,pom.xml" />
+    <!-- Misc -->
+    <copy file="${lib}/javawebparts-misc-${project_version_filename}.jar"
+      toFile="${distro_dir}/maven/temp/javawebparts-misc-${project_version_filename}.jar"
+      overwrite="true" />
+    <copy file="maven/pom_misc.xml"
+      toFile="${distro_dir}/maven/temp/pom.xml" overwrite="true" />
+    <replace file="${distro_dir}/maven/temp/pom.xml" token="?????"
+      value="${project_version_filename}" />
+    <jar destfile="${distro_dir}/maven/javawebparts-misc-${project_version_filename}.jar"
+     basedir="${distro_dir}/maven/temp" includes="javawebparts-misc-${project_version_filename}.jar,pom.xml" />
+    <!-- Request -->
+    <copy file="${lib}/javawebparts-request-${project_version_filename}.jar"
+      toFile="${distro_dir}/maven/temp/javawebparts-request-${project_version_filename}.jar"
+      overwrite="true" />
+    <copy file="maven/pom_request.xml"
+      toFile="${distro_dir}/maven/temp/pom.xml" overwrite="true" />
+    <replace file="${distro_dir}/maven/temp/pom.xml" token="?????"
+      value="${project_version_filename}" />
+    <jar destfile="${distro_dir}/maven/javawebparts-request-${project_version_filename}.jar"
+     basedir="${distro_dir}/maven/temp" includes="javawebparts-request-${project_version_filename}.jar,pom.xml" />
+    <!-- Response -->
+    <copy file="${lib}/javawebparts-response-${project_version_filename}.jar"
+      toFile="${distro_dir}/maven/temp/javawebparts-response-${project_version_filename}.jar"
+      overwrite="true" />
+    <copy file="maven/pom_response.xml"
+      toFile="${distro_dir}/maven/temp/pom.xml" overwrite="true" />
+    <replace file="${distro_dir}/maven/temp/pom.xml" token="?????"
+      value="${project_version_filename}" />
+    <jar destfile="${distro_dir}/maven/javawebparts-response-${project_version_filename}.jar"
+     basedir="${distro_dir}/maven/temp" includes="javawebparts-response-${project_version_filename}.jar,pom.xml" />
+    <!-- Servlet -->
+    <copy file="${lib}/javawebparts-servlet-${project_version_filename}.jar"
+      toFile="${distro_dir}/maven/temp/javawebparts-servlet-${project_version_filename}.jar"
+      overwrite="true" />
+    <copy file="maven/pom_servlet.xml"
+      toFile="${distro_dir}/maven/temp/pom.xml" overwrite="true" />
+    <replace file="${distro_dir}/maven/temp/pom.xml" token="?????"
+      value="${project_version_filename}" />
+    <jar destfile="${distro_dir}/maven/javawebparts-servlet-${project_version_filename}.jar"
+     basedir="${distro_dir}/maven/temp" includes="javawebparts-servlet-${project_version_filename}.jar,pom.xml" />
+    <!-- Session -->
+    <copy file="${lib}/javawebparts-session-${project_version_filename}.jar"
+      toFile="${distro_dir}/maven/temp/javawebparts-session-${project_version_filename}.jar"
+      overwrite="true" />
+    <copy file="maven/pom_session.xml"
+      toFile="${distro_dir}/maven/temp/pom.xml" overwrite="true" />
+    <replace file="${distro_dir}/maven/temp/pom.xml" token="?????"
+      value="${project_version_filename}" />
+    <jar destfile="${distro_dir}/maven/javawebparts-session-${project_version_filename}.jar"
+     basedir="${distro_dir}/maven/temp" includes="javawebparts-session-${project_version_filename}.jar,pom.xml" />
+    <!-- Taglib -->
+    <copy file="${lib}/javawebparts-taglib-${project_version_filename}.jar"
+      toFile="${distro_dir}/maven/temp/javawebparts-taglib-${project_version_filename}.jar"
+      overwrite="true" />
+    <copy file="maven/pom_taglib.xml"
+      toFile="${distro_dir}/maven/temp/pom.xml" overwrite="true" />
+    <replace file="${distro_dir}/maven/temp/pom.xml" token="?????"
+      value="${project_version_filename}" />
+    <jar destfile="${distro_dir}/maven/javawebparts-taglib-${project_version_filename}.jar"
+     basedir="${distro_dir}/maven/temp" includes="javawebparts-taglib-${project_version_filename}.jar,pom.xml" />
+    <delete dir="${distro_dir}/maven/temp" />
+    <echo message="Done" />
+  </target>
+
+
+</project>

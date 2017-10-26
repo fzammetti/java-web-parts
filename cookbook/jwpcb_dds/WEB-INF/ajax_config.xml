@@ -1,0 +1,42 @@
+<ajaxConfig>
+  <!-- Define a single group. -->
+	<group ajaxRef="DynamicDoubleSelectForm">
+	  <!-- Only the top ones will be Ajax-enabled. This is the left one. -->
+		<element ajaxRef="showTitleChange">
+		  <!-- On change of the first select we need to submit the selection -->
+		  <!-- to the servlet so we can get our list of characters back. -->
+			<event type="onchange">
+			  <!-- Just going to submit a simple query string with a single -->
+			  <!-- parameter, showTitle, that will take the value of the -->
+			  <!-- showTitleSelect element of the form. -->
+				<requestHandler type="std:QueryString" method="get" target="/dynamicDoubleSelect?method=first">
+					<parameter>showTitle=showTitleSelect</parameter>
+				</requestHandler>
+				<!-- When we get back, just insert the returned results into the -->
+				<!-- div named characters on the page, which contains the second -->
+				<!-- select element. -->
+				<responseHandler type="std:InnerHTML">
+					<parameter>characters</parameter>
+				</responseHandler>
+			</event>
+		</element>
+	  <!-- And this is the right one. -->
+		<element ajaxRef="showTitleChange2">
+		  <!-- On change of the right select we need to submit the selection -->
+		  <!-- to the servlet so we can get our list of characters back. -->
+			<event type="onchange">
+			  <!-- Just going to submit a simple query string with a single -->
+			  <!-- parameter, showTitle, that will take the value of the -->
+			  <!-- showTitleSelect element of the form. -->
+				<requestHandler type="std:QueryString" method="get" target="/dynamicDoubleSelect?method=second">
+					<parameter>showTitle=showTitleSelect2</parameter>
+				</requestHandler>
+				<!-- When we get back, just insert the returned results into the -->
+				<!-- selectbox named characters2 on the page -->
+				<responseHandler type="std:Selectbox">
+					<parameter>characters2</parameter>
+				</responseHandler>
+			</event>
+		</element>
+	</group>
+</ajaxConfig>

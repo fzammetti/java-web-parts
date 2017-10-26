@@ -1,0 +1,83 @@
+People who have contributed to Java Web Parts
+---------------------------------------------
+
+It is very important to me that all those who contribute to the project in any
+way get credit for their contributions.  To help do that, I've added this file
+to the distribution.
+
+Here is the list of contributors to date, in no particular order, with at least
+a partial list of what they have contributed:
+
+* Frank W. Zammetti
+  Project founder and developer.
+
+* Tamas Szabo
+  Tamas is a project developer.
+
+* Herman van Rosmalen
+  Herman is a project developer.
+
+* Wendy Smoak
+  Some various code submissions and suggestions.
+
+* Aron Gombas
+  Contributed a patch to fix some typos and implement more robust logging.
+
+* Günther Wieser
+  Found and resolved some issues under Resin.
+
+* Ricky Tong
+  Contributed the stdXSLT handler, and some other contributions as well.
+
+* Zaid A. Omar
+  Contributed an AjaxParts Taglib enhancement to allow for execution of script
+  blocks returned and handled with the stdInnerHTML handler.
+
+* William Vuong
+  Discovered the problem with the CompressionFilter that caused it to not work
+  with forwards, and helped track down the problem.
+
+* Keith Ulrich
+  Discovered a problem with the TLDs, as well as a problem with the AjaxParts
+  Taglib demo page in Firefox.
+
+* Colin Kilburn
+  Submitted a patch to put all APT stuff that previously went into page scope
+  into request scope instead.
+
+* Luigi Bitonti
+  Submitted a patch to deal with an error that occurred in JWPGetElementValue
+  when a <select> element had no options and also a bug caused by global vars
+  in stdPoster.
+
+* Yannick Haudry
+  Contributed a patch for RequestHelpers to get all values for a given
+  parameter, not just the first (i.e., two parameters named "param" should
+  result in an array of values, but before this patch you would only get the
+  first one).  Also contributed a patch for IPAccessControlFilter to allow
+  regex against addressList and retrieval of client IP from a header so the
+  filter can work behind load balancers.
+
+* Zack Shapiro
+  Suggested the idea behind the patch to the IPAccessControlFilter by
+  Yannick Haudry.
+
+* Darren King
+  Provided patch to implement the attachTo attribute on the <ajax:event/> tag.
+  Also provided a patch to make the std:selectbox handler a bit more robust
+  under Firefox.
+
+* Carl Manaster
+  Found a documentation bug in the IPAccessControlFilter.
+
+* James Ottot
+  Provided a fix for an exception in JSCompressionFilter under WebLogic.
+
+* Gerald Schulzendorff
+  Provided a fix for matchPattern problems and stdRedirecter problems.  Also
+  pointed out that stdRedirecter was written as stdRedirector in docs.
+
+Thanks to every that has contributed, and keep 'em coming!  Contributions are
+always welcome here at Java Web Parts!
+
+- Frank W. Zammetti

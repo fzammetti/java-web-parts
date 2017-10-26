@@ -1,0 +1,186 @@
+<ajaxConfig>
+
+	<group ajaxRef="TestPage">
+		<element ajaxRef="a2buttonElem">
+			<event type="onclick">
+				<requestHandler type="std:SimpleRequest" target="/textReturner">
+					<parameter />
+				</requestHandler>
+				<responseHandler type="std:InnerHTML">
+					<parameter>a2buttondiv</parameter>
+				</responseHandler>
+			</event>
+		</element>
+		<element ajaxRef="iFrame1">
+			<event type="onclick">
+				<requestHandler type="std:SimpleRequest" target="/ajaxIFrameTest">
+					<parameter />
+				</requestHandler>
+				<responseHandler type="std:IFrameDisplay">
+					<parameter>ajaxIFrame</parameter>
+				</responseHandler>
+			</event>
+		</element>
+		<element ajaxRef="Link1">
+			<event type="onmouseover">
+				<requestHandler type="std:SimpleRequest" target="/textReturner">
+					<parameter />
+				</requestHandler>
+				<responseHandler type="std:InnerHTML">
+					<parameter>ajaxPartsResults,ajaxPartsResults2</parameter>
+				</responseHandler>
+			</event>
+		</element>
+		<element ajaxRef="Link2">
+			<event type="onclick">
+				<requestHandler type="std:SimpleRequest" target="/codeExecuterTestServlet">
+					<parameter />
+				</requestHandler>
+				<responseHandler type="std:CodeExecuter">
+					<parameter />
+				</responseHandler>
+			</event>
+		</element>
+		<element ajaxRef="Button2">
+			<event type="onclick">
+				<requestHandler type="std:SendByID" target="/sendByIDTest">
+					<parameter>xml.person,firstName.innerHTML,lastName.value</parameter>
+				</requestHandler>
+				<responseHandler type="std:DoNothing">
+					<parameter />
+				</responseHandler>
+			</event>
+		</element>
+		<element ajaxRef="AbsLink">
+			<event type="onclick">
+				<requestHandler type="std:SimpleRequest" target="/textReturner">
+					<parameter />
+				</requestHandler>
+				<responseHandler type="std:InnerHTML">
+					<parameter>divAbsLink</parameter>
+				</responseHandler>
+			</event>
+		</element>
+	</group>
+
+  <group ajaxRef="AjaxPartsTaglibTestForm">
+    <element ajaxRef="Button1">
+      <event type="onclick">
+        <requestHandler type="std:SimpleRequest" target="/textReturner">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:InnerHTML">
+          <parameter>ajaxPartsResults</parameter>
+        </responseHandler>
+      </event>
+      <event type="onmouseover">
+        <requestHandler type="std:SimpleRequest" target="/textReturner">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:InnerHTML">
+          <parameter>ajaxPartsResults</parameter>
+        </responseHandler>
+      </event>
+    </element>
+    <element ajaxRef="Checkbox1">
+      <event type="onclick">
+        <requestHandler type="std:SimpleRequest" target="/textReturner">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:InnerHTML">
+          <parameter>ajaxPartsResults</parameter>
+        </responseHandler>
+      </event>
+    </element>
+    <element ajaxRef="Radio1">
+      <event type="onclick">
+        <requestHandler type="std:SimpleRequest" target="/textReturner">
+          <parameter />
+        </requestHandler>
+        <responseHandler type="std:InnerHTML">
+          <parameter>ajaxPartsResults</parameter>
+        </responseHandler>
+      </event>
+    </element>
+    <element ajaxRef="selectbox1">
+      <event type="onchange">
+        <requestHandler type="std:QueryString" target="/ajaxSelectTest">
+          <parameter>keyParm=selbox1</parameter>
+        </requestHandler>
+        <responseHandler type="std:Selectbox">
+          <parameter>selbox2</parameter>
+        </responseHandler>
+      </event>
+    </element>
+		<element ajaxRef="manipulator">
+			<event type="onclick">
+				<requestHandler type="std:SimpleRequest" target="/ajaxFormManipulatorTest">
+					<parameter />
+				</requestHandler>
+				<responseHandler type="std:FormManipulator">
+					<parameter/>
+				</responseHandler>
+			</event>
+		</element>
+  </group>
+
+  <group ajaxRef="TestForm" form="TestForm" method="post">
+    <element ajaxRef="Button">
+      <event type="onclick">
+        <requestHandler type="std:Poster" target="/ajaxPostTest">
+          <parameter>text1=text1,text2=text2</parameter>
+        </requestHandler>
+        <responseHandler type="std:Alerter">
+          <parameter />
+        </responseHandler>
+      </event>
+    </element>
+  </group>
+
+  <!-- The following group is used to test the FormSender standard request -->
+  <!-- handler.  The three elements correspond to the three ways this -->
+  <!-- handler can send the contents of the form. -->
+  <group ajaxRef="aptFormSender" form="aptFormSenderForm">
+    <element ajaxRef="parametersGET" method="get">
+      <event type="onclick">
+        <requestHandler type="std:FormSender" target="/aptFormSenderTextServlet">
+          <parameter>parameters</parameter>
+        </requestHandler>
+        <responseHandler type="std:Alerter">
+          <parameter />
+        </responseHandler>
+      </event>
+    </element>
+    <element ajaxRef="parametersPOST" method="post">
+      <event type="onclick">
+        <requestHandler type="std:FormSender" target="/aptFormSenderTextServlet">
+          <parameter>parameters</parameter>
+        </requestHandler>
+        <responseHandler type="std:Alerter">
+          <parameter />
+        </responseHandler>
+      </event>
+    </element>
+    <element ajaxRef="json">
+      <event type="onclick">
+        <requestHandler type="std:FormSender" target="/aptFormSenderTextServlet">
+          <parameter>json</parameter>
+        </requestHandler>
+        <responseHandler type="std:Alerter">
+          <parameter />
+        </responseHandler>
+      </event>
+    </element>
+    <element ajaxRef="xml">
+      <event type="onclick">
+        <requestHandler type="std:FormSender" target="/aptFormSenderTextServlet">
+          <parameter>xml</parameter>
+        </requestHandler>
+        <responseHandler type="std:Alerter">
+          <parameter />
+        </responseHandler>
+      </event>
+    </element>
+  </group>
+
+</ajaxConfig>

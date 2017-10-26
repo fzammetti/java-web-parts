@@ -1,0 +1,6 @@
+<!-- This is a sample config file used by the AppConfigContextListener. -->
+<config>
+ <item1>Value1</item1>
+ <item2>Value2</item2>
+ <item3>Value3</item3>
+</config>

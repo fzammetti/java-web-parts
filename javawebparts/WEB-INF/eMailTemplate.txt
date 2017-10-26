@@ -1,0 +1,20 @@
+${currentDate}
+
+From the desk of ${deskOf}
+
+
+Dear ${firstName} ${lastName},
+
+  It has come to our attention that you have not paid the bill for your pet
+${petName}.  We must therefore ask that you remit payment in full no later than
+seven business days after receipt of this message.  If you do not comply, we
+will unleash the demons from the pits of Hell to reposess ${petName}, as well
+as generally hurt you in many gruesome ways.
+
+  Have a nice today and a pleasant tomorrow.
+
+                                                       Sincerely,
+                                                       Satan's Family Pet Shop
+
+
+cc: ${ccList}

@@ -1,0 +1,7 @@
+<!-- This is a sample data file for the RedirectReturnerServlet. -->
+<RedirectReturnerServletItems>
+  <item>http://www.google.com/intl/en/images/logo.gif</item>
+  <item>/img/header1.gif</item>
+  <item>/img/mouse.gif</item>
+  <item>http://javawebparts.sourceforge.net/logo.jpg</item>
+</RedirectReturnerServletItems>

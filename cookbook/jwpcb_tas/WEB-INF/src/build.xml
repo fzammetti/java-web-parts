@@ -1,0 +1,24 @@
+<project name="Java Web Parts Cookbook Type-Ahead Suggestions" default="build"
+ basedir="." >
+
+
+  <path id="classpath">
+    <pathelement location="servletapi-2.3.jar" />
+  </path>
+
+
+  <target name="build">
+    <echo message="Compiling..." />
+    <delete dir="../classes" />
+    <mkdir dir="../classes" />
+    <javac srcdir="${basedir}" destdir="../classes"
+     deprecation="false"
+     target="1.4" source="1.4" debug="true" debuglevel="lines,vars,source"
+     encoding="iso-8859-1">
+      <classpath refid="classpath" />
+    </javac>
+    <echo message="Done" />
+  </target>
+
+
+</project>

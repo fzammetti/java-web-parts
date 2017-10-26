@@ -1,0 +1,4 @@
+<config>
+  <redirect from="*/app/redirect_test/*" to="http://www.google.com" />
+  <forward from="*/app/forward/test.htm" to="/index.jsp" />
+</config>

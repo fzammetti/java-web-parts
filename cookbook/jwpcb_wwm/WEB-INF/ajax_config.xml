@@ -1,0 +1,38 @@
+<ajaxConfig>
+
+	<handler name="AppendInnerHTML" type="response">
+		<location>js/appendInnerHTML.js</location>
+		<function>AppendInnerHTML</function>
+	</handler>
+	<handler name="CustomSelectBox" type="response">
+		<location>js/customSelectBox.js</location>
+		<function>CustomSelectBox</function>
+	</handler>
+
+	<group ajaxRef="InputForm">
+		<element ajaxRef="TypeList">
+			<event type="manual">
+				<requestHandler type="std:SimpleRequest"
+					target="/weWantMore?method=selectValues">
+					<parameter />
+				</requestHandler>
+				<responseHandler type="CustomSelectBox">
+					<parameter>ValueList</parameter>
+				</responseHandler>
+			</event>
+		</element>
+
+		<element ajaxRef="MoreButton">
+			<event type="manual">
+				<requestHandler type="std:SimpleRequest"
+					target="/weWantMore?method=nextRow">
+					<parameter />
+				</requestHandler>
+				<responseHandler type="AppendInnerHTML">
+					<parameter>formDetails</parameter>
+				</responseHandler>
+			</event>
+		</element>
+	</group>
+
+</ajaxConfig>

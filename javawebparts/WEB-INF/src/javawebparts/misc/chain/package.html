@@ -1,0 +1,349 @@
+<body>
+  This package contains a Chain Of Responsibility (CoR) pattern implementation
+  which offers a great deal of flexibility.  Note that this implementation
+  IS NOT web-specific, that is, you can use it outside a webapp without any
+  problem.
+  <br><br>
+  As defined by the Gang Of Four (GoF - Gamma, Helm, Johnson, and Vlissides),
+  the CoR pattern can be described like so:
+  <br><br>
+  "Avoid coupling the sender of a request to its receiver by giving more than
+  one object a chance to handle the request.  Chain the receiving objects and
+  pass the request along the chain until an object handles it."
+  <br><br>
+  Yeah, whatever :)  In short, we're talking about defining a series of atomic
+  operations that are "chained" together and executed in sequence, giving
+  each step the opportunity to do something or not.
+  <br><br>
+  As an example, take the simple mathematical equation:<br><br>
+  1 + 2 + 3 + 4 = 10
+  <br><br>
+  We can break this into a series of individual steps.  In this description,
+  the letter A represents the accumulation of the result after each step:
+  <br><br>
+  Step 1.  A = 1 + 2<br>
+  Step 2.  A = A + 3<br>
+  Step 3.  A = A + 4<br>
+  <br>
+  Now, imagine you defined each of those steps as a unique Java class.  Further
+  imagine that you declared that those three steps, done in sequence, is called
+  a Chain, and this Chain represents the larger operation of the equation.
+  In short, that's the CoR pattern.
+  <br><br>
+  Now, on to the details of this implenentation...
+  <br><br>
+  Simply put, you will create an XML file something like the following:
+  <br><br>
+  <div style="background-color:#e0e0e0;">
+  &lt;chainConfig&gt;<br>
+  &nbsp;&nbsp;&lt;catalog id="myCatalog"&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&lt;chain id="myChain"&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;command id="step1"
+  className="my.app.Step1" /&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;command id="step2"
+  className="my.app.Step2" /&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;command id="step3"
+  className="my.app.Step3" /&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&lt;/chain&gt;<br>
+  &nbsp;&nbsp;&lt;/catalog&gt;<br>
+  &lt;/chainConfig&gt;<br>
+  </div>
+  <br>
+  <b>The config file must be in the classpath accessible to the ChainManager
+  class!</b>  In a webapp, the easiest way to do this is to place the file in
+  WEB-INF/classes.  By default, the name of the file MUST be chain_config.xml.
+  You can override this in two ways: (a) pass the filename (which is
+  technically a path) to the ChainManager's constructor, or (b) set an
+  environment variable named JWP_CHAIN_CONFIG_FILE_NAME to the value you
+  desire.  If you have any question about how to set this value, look up the
+  getResourceAsStream() method of the Class class in the Java SDK.  The rules
+  enumerated there are what you must follow.
+  <br><br>
+  The config file defines three elements: Catalogs, Chains and Commands.
+  Catalogs are nothing but collections of Chains who's sole purpose is to
+  allow you to organize things better when you are defining multiple Chains,
+  and a Chain is of course an ordered series of Commands to be executed.
+  <br><br>
+  The thing you as a developer will be primarily concerned with are the
+  Commands.  These define individual steps in a Chain, and this is what you will
+  implement in code.  Let's take a look at the three Commands above, which
+  correspond to the three steps in that equation from before:
+  <br><br>
+  <div style="background-color:#e0e0e0;">
+  package my.app;<br>
+  <br>
+  import javawebparts.misc.chain.ChainContext;<br>
+  import javawebparts.misc.chain.Command;<br>
+  import javawebparts.misc.chain.Result;<br>
+  <br>
+  public class Step1 implements Command {<br>
+  <br>
+  &nbsp;&nbsp;public Result init(ChainContext chainContext) {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;return new Result(Result.SUCCESS);<br>
+  &nbsp;&nbsp;}<br>
+  <br>
+  &nbsp;&nbsp;public Result execute(ChainContext chainContext) {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;int a = 1 + 2;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;chainContext.setAttribute("a", new Integer(a));<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;return new Result(Result.SUCCESS);<br>
+  &nbsp;&nbsp;}<br>
+  <br>
+  &nbsp;&nbsp;public Result cleanup(ChainContext chainContext) {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;return new Result(Result.SUCCESS);<br>
+  &nbsp;&nbsp;}<br>
+  <br>
+  }
+  </div>
+  <br>
+  Every Command you write will implement the Command interface, which defines
+  three methods: init(), execute() and cleanup().
+  <br><br>
+  You can think of init() exactly like you do a constructor in that it will
+  always be called before anything else.  You can do whatever you like here...
+  grab a database connection, call some remote system, initialize some fields,
+  etc.  Note that Commands <b>do not</b> have to be thread-safe because a new
+  instance of it is instantiated every time it is needed.  Of course, this
+  means you cannot store things in the instance between Command executions.
+  You <b>can</b> however store them between the execution of these three
+  methods, you don't have to resort to static fields unless you want to.
+  <br><br>
+  The cleanup() method can be thought of like finalize() except that it is more
+  deterministic in that it will <b>always</b> be called as the last thing done,
+  <b>regardless</b> of what happens elsewhere in the Command (well, except for
+  exceptions, which could cause it to not execute).
+  <br><br>
+  The execute() method is where the actual work of your Command should go.
+  <br><br>
+  Each of the three methods receives a reference to a ChainContext object.
+  The ChainContext is how information is communicated between Commands of the
+  Chain.  Conceptually it is just like an HttpRequest object.  In fact, you
+  work with it in the same way via setAttribute() and getAttribute() methods,
+  which takes a key and an Object value to store.  You can put whatever you
+  like in the context, at any time (i.e., from any of the three methods, and/or
+  before and after the Chain executes). You can also find some standard pieces
+  of information in the context, such as the last Result that was produced by a
+  Command (or a Chain, if a Command is a subchain... more on this later) as well
+  as the ID of the Catalog and Chain the Command belongs to.
+  <br><br>
+  Each of the three methods returns an instance of the Result class.  This
+  defines what happened within the Command.  You cnn construct a Result object
+  in one of three ways:
+  <br><br>
+  <b>Result r = new Result(Result.xxxx);</b>
+  <br>
+  In this case, you are just returning one of the allowed result codes as
+  defined by the static fields in the Result class, represented by the xxxx
+  above.  Those values are:
+  <ul>
+    <li><n>SUCCESS</n> - Return this when everything went according to plan and
+    the chain should continue normally.</li>
+    <li><n>FAIL</n> - Return this when an unexpected failure occurs.  In
+    general, your Commands <b>should never throw exceptions</b>!  You should
+    handle any exception that could happen and return this code if it is
+    something the Command cannot handle and the Chain should be stopped.</li>
+    <li><n>ABORT</n> - This is returned when the chain should be stopped.  This
+    is <b>not</b> the same as FAIL because FAIL indicates conditions that
+    should really never happen, where ABORT are conditions that you
+    expect could reasonably happen.</li>
+    <li><n>RESTART_CHAIN</n> - As you would think, the Chain is restarted from
+    the beginning.  Note however that the ChainContext <b>is not </b> reset!
+    Also note that this is can lead to an infinite loop, so you have to
+    take care to ensure that can never happen!!</li>
+    <li><n>REDO_COMMAND</n> - Re-executes the Command.  Note that this too is a
+    prime candidate for causing an infinite loop, so be careful!!</li>
+    <li><n>JUMP_TO_COMMAND</n> - This acts like a GOTO statement in BASIC.</li>
+    </li>
+  </ul>
+  <b>Result r = new Result(Result.xxxx, "yyyy");</b>
+  <br>
+  The result code is the first parameter and is still as described above.  The
+  "yyyy" parasmeter is any arbitrary extra info you would like to return.  This
+  can be helpful if the next Command should do something in a variable way
+  based on what the result of the previous Command was.  Note that if your
+  intention is to return some extra info to the caller executing the Chain,
+  the extra info can only be returned by the last Command in the Chain because
+  subsequent Commands would effectively overwrite any previous extra info.
+  Alternatively, each Command in your Chain would have to replicate the
+  extra info along the Chain so it is always present for the last Command to
+  return.
+  <br><br>
+  <b>Result r = new Result(Result.xxxx, "yyyy", "zzzz");</b>
+  <br>
+  The result code and extra info parameters are still as described above.  The
+  "zzzz" parameter is the ID of a Command.  This is only applicable when the
+  return code is JUMP_TO_COMMAND.
+  <br><br>
+  Let's look at the next Command in the chain:
+  <br><br>
+  <div style="background-color:#e0e0e0;">
+  package my.app;<br>
+  <br>
+  import javawebparts.misc.chain.ChainContext;<br>
+  import javawebparts.misc.chain.Command;<br>
+  import javawebparts.misc.chain.Result;<br>
+  <br>
+  public class Step2 implements Command {<br>
+  <br>
+  &nbsp;&nbsp;public Result init(ChainContext chainContext) {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;return new Result(Result.SUCCESS);<br>
+  &nbsp;&nbsp;}<br>
+  <br>
+  &nbsp;&nbsp;public Result execute(ChainContext chainContext) {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;Integer a = (Integer)chainContext.getAttribute("a");
+  <br>
+  &nbsp;&nbsp;&nbsp;&nbsp;a = new Integer(a.intValue() + 3);<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;chainContext.setAttribute("a", a);<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;return new Result(Result.SUCCESS);<br>
+  &nbsp;&nbsp;}<br>
+  <br>
+  &nbsp;&nbsp;public Result cleanup(ChainContext chainContext) {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;return new Result(Result.SUCCESS);<br>
+  &nbsp;&nbsp;}<br>
+  <br>
+  }
+  </div>
+  <br>
+  Still very straight-forward.  No sense wasting the space to show the third
+  Command, it's the same except we're adding 4 to A in it.
+  <br><br>
+  So, at this point we've coded up the Commands, defined them to form a Chain
+  in the config file, and added the Chain to a Catalog.  All that's left is
+  using it.  Very simple:
+  <br><br>
+  <div style="background-color:#e0e0e0;">
+  ChainManager cm = new ChainManager();<br>
+  ChainContext ct = cm.createContext();<br>
+  cm.executeChain("myCatalog/myChain, ct);<br>
+  Result cr = ct.getResult();<br>
+  if (cr.getCode() == Result.SUCCESS) {<br>
+  &nbsp;&nbsp;System.out.println(ct.getAttribute("a"));<br>
+  } else {<br>
+  &nbsp;&nbsp;System.out.println("Chain FAIL or ABORT");<br>
+  }<br>
+  </div>
+  <br>
+  All interaction with Chains are done through the ChainManager.  So, we need
+  to instantiate one.  The first time a ChainManager is instantiated, the config
+  file will be read and static objects created to represent it.  Subsequent
+  ChainMaager instantiations will <b>not</b> incur this overhead.  Once we
+  have a ChainManager, we ask it for a new ChainContext object.  You can at
+  this point add whatever initial data to it tha your Chain needs.  Then, we
+  simply ask it to execute a given Chain in a given Catalog, handing it the
+  ChainContext.  Once it completes, we interrogate the ChainContext to see
+  what the result of the execution was, and act accordingly.
+  <br><br>
+  And that, in a nutshell, is the Chain implementation in Java Web Parts!
+  <br><br>
+  Ok, so that's the basic.  How about the more advanced stuff?
+  <br><br>
+  <ul>
+    <li><b>Commands can themselves be Chains (AKA, Subchains)</b><br>
+    Take the standard Command definition in the config file:<br><br>
+    &lt;command id="step2" className="my.app.Step2" /&gt;
+    <br><br>
+    Let's say that instead of doing A=A+3 as the second step, we instead
+    wanted to do (A=A+6)*2.  We could of course just break that into two
+    Commands and add them to the Chain, but another approach is to create
+    those Commands and make them their own Chain, then make the second step
+    of the original Chain be that new Chain.  The Commands would be exactly
+    as before, no change whatsoever.  The config file is different though,
+    and here's what it would now look like:
+    <br><br>
+    <div style="background-color:#e0e0e0;">
+    &lt;chainConfig&gt;&lt;br>
+    &nbsp;&nbsp;&lt;catalog id="myCatalog"&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;chain id="myChain"&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;command id="step1"
+    className="my.app.Step1" /&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;command id="step2"
+    chain="myChain2" /&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;command id="step3"
+    className="my.app.Step3" /&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/chain&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;chain id="myChain2"&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;command id="step2a"
+    className="my.app.Step2a" /&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;command id="step2b"
+    className="my.app.Step2b" /&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/chain&gt;<br>
+    &nbsp;&nbsp;&lt;/catalog&gt;<br>
+    &lt;/chainConfig&gt;<br>
+    </div>
+    <br>
+    Let's assume that Comamnd Step2a does A=A+6 and Step2b does A=A*2.  Now,
+    as defined, myChain2 will be executed when myChain hits step 2.  When
+    myChain2 completes, myChain will continue at step 3.  That's all there is
+    to it!  Of course, you can execute myChain2 on its own if you need to,
+    it's just another Chain in the Catalog.
+    <br><br>
+    <li><b>Chains can extend other Chains</b><br>
+    You can do this in the config file:
+    <br><br>
+    &lt;chain id="myChain2" extends="myCatalog/myChain"&gt;<br>
+    <br>
+    You will always specify extends in the form xxxx/yyyy where xxxx is the
+    Catalog ID and yyyy is the Chain ID.  When you do this, the contents of
+    the base Chain is copied into the extended Chain, <b>before</b> any new
+    Commands are added.  So, if you had this config file:
+    <br><br>
+    <div style="background-color:#e0e0e0;">
+    &lt;chainConfig&gt;&lt;br>
+    &nbsp;&nbsp;&lt;catalog id="myCatalog"&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;chain id="myChain"&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;command id="step1"
+    className="my.app.Step1" /&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;command id="step2"
+    className="my.app.Step2" /&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;command id="step3"
+    className="my.app.Step3" /&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/chain&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;chain id="myChain2"
+    extends="myCatalog/myChain"&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;command
+    id="step4" className="my.app.Step4" /&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;command
+    id="step5" className="my.app.Step5" /&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/chain&gt;<br>
+    &nbsp;&nbsp;&lt;/catalog&gt;<br>
+    &lt;/chainConfig&gt;<br>
+    </div>
+    <br>
+    ...Then the sequence of Commands in myChain2 would be step1,step2,step3,
+    step4,step5.  Note that these are COPIES!  In other words, it is as if you
+    defined the three Commands from myChain directly in myChain2.  At runtime,
+    there is essentially two instance of step1 floating around, one tied to
+    each of the two Chains.
+    <br><br>
+    <li><b>Commands can be replaced when extending a Chain</b><br>
+    If we replace the above line:<br><br>
+    &lt;command id="step4" className="my.app.Step4" /&gt;<br>
+    <br>
+    ...with...<br><br>
+    &lt;command id="step4" className="my.app.Step4" replaceid="step2"/&gt;<br>
+    <br>
+    ...then the final sequence of Commands in myChain2 would be step1,step4,
+    step3,step5.  The step4 Command replaces the step2 Command.  But again,
+    remember these are COPIES, so the sequence of Commands in myChain is
+    STILL step1,step2,step3.  This provides something very much like the
+    ability to override methods in a class you extend within the Chain
+    paradigm.
+    <br><br>
+    <li><b>Catalogs can extend other Catalogs</b><br>
+    There is an extends attribute on the Catalog element, just like on the Chain
+    element (except that it is in the form "yyyy" where yyyy is the ID of the
+    Catalog you wish to extend), that serves the exact same purpose.  All the
+    Chains in the base Catalog are copied to the extended Catalog.  Any Chain
+    then defined in the extended catalog with an ID that matches a Chain copied
+    over will override the copied Chain.  Note that for a Catalog to exend
+    another, the base Catalog <b>must have been defined prior to the extends
+    attribute appearing in the config file</b>!  In other words, if you have
+    three Catalogs defined named Catalog1,Catalog2,Catalog3 and they are defined
+    in that order, than Catalog2 or Catalog3 could extend Catalog1, but Catalog1
+    could not extend anything, and things will blow up if you try it!
+  </ul>
+  That about covers it.  I hope you find the CoR implementation useful!  There
+  is some further advanced functionality I intend to add, but for now, this
+  is it.  Enjoy!
+  <br><br>
+  This package depends on the following extra packages to compile and run: None.
+</body>

@@ -1,0 +1,738 @@
+Java Web Parts History File
+(c) 2005 Frank W. Zammetti, All Rights Reserved
+
+
+-------------
+v1.3
+??/??/200?
+-------------
+* Fixed a documentation bug in IPAccessFilter.  Thanks to Carl Manaster for it.
+* Added a setContentLength() call to JSCompressionFilter to alleviate an
+  exception in WebLogic.  Thanks to James Otto for it.
+* Applied patch from Gerald Schulzendorff to fix a problem with matchPattern
+  problems and a stdRedirecter problem.  Also corrected documentation so that
+  it's always stdRedirecter (it probably should be stdRedirector everywhere,
+  but for now at least it's consistently stdRedirecter).
+
+-------------
+v1.2
+3/12/2008
+-------------
+* Addressed bug #1770034 - APT uses encodeURIComponent() instead of escape()
+  now.
+* Checked in a fix to allow the FormSender std request handler in APT to
+  properly send POST'd request parameters (had to encode the POST body
+  properly, that's all).  Modified sample app to demonstrate this.
+* Added jsonp attribute to <requestHandler> tag for APT.  This allows for
+  cross-domain JSON-P AJAX requests.  Added test to sample application and
+  relevant documentation.
+
+
+-------------
+v1.1
+4/24/2007
+-------------
+* 1.1 final released, no changes from 1.1 beta 1.
+
+
+-------------
+v1.1 beta 1
+4/8/2007
+-------------
+* Updated readme.txt file.
+* Applied patch from Darren King to std:selectbox handler to make it more
+  robust under Firefox.
+* Applied patch (with some minor modifications) from Darren King to implement
+  feature request #1679511, which is the addition of the attachTo attribute
+  on the <ajax:event/> tag in APT which allows you to give the DOM ID of the
+  element on the page to attach the AJAX event to, thereby removing the
+  requirement that the event tag has to immediately follow the target element.
+  Also updated documentation and added to sample app to demonstrate this.
+* Fixed a bug in the Javascript compression (JSMin.java, changes made by
+  us).
+* Added the jstags:dateDifference tag for calculating the number of days
+  between two dates.
+* Applied patch #1684770 from Yannick Haudry to the IPAccessControlFilter to
+  add support for regex in the addressList and to retrieve client IP from
+  a header so the filter can be used behind load balancers (originally from
+  a suggestion by Zack Shapiro).
+* Added new standard APT handler FormSender.  This allows you to send the
+  contents of an HTML form to the server as either plain old parameters,
+  either via POST or GET, or as JSON or XML (always POSTed).  For JSON and
+  XML, the base object name and root element respectively is the name of the
+  target form.
+* Made sure all APT standard handlers used proper JS variable scoping, i.e.,
+  var keyword was used for all variables within the function.  Although there
+  were no problems I was aware of, this avoids any potential scoping issues
+  down the road.
+* Switched source repository to Subversion.
+* Applied patch from Yannick Haudry for RequestHelpers to get all values
+  for a given parameter rather than just the first.
+* Added FormSenderServlet and associated test case in sample app.  This
+  servlet allows you to accept the submission of a form and use its values
+  to construct an eMail address (based on a template with replacement
+  tokens in it) and send it to a specified address or addresses.
+* Updated Commons Lang to 2.3 so StrSubstitutor was availble for use in
+  the FormSenderServlet, which should be coming soon.
+* Applied patch from Colin Bitonti to address bug in JWPGetElementValue.
+* Corrected global-scope vars in stdPoster as pointed out by Colin Bitonti.
+* Corrected a bug in the stdSelectbox handler. Using options with an empty
+  labels gave a javascript error. Bug pointed out by Sandra Hibma.
+* Corrected a bug in the stdTextboxArea handler. Seems like this handler
+  didn't see the revision made to APT. Bug pointed out by Sandra Hibma.
+* Corrected a bug in the JavaScript APT object. When using multiple response
+  handlers (with no matchPattern) only the last one did get executed.
+  Bug pointed out by Sandra Hibma.
+
+
+-------------
+v1.0
+1/1/2007
+-------------
+* FIRST GA RELEASE!!  WOO-HOO!!  HAPPY NEW YEAR!!
+* Fixed an APT bug in the timer tag. The timer would never start, even if the
+  startOnLoad was set to true.
+* Modified build script to remove test directory from WEB-INF when executing
+  distro task for binary package.
+
+
+-------------
+v1.0 Beta 7
+11/19/2006
+-------------
+* Moved the new unit test option on the build GUI to its own section.
+* Fixed an APT bug where manual and timer events that used handlers that need
+  a form would not get a reference to the form and would generate a JavaScript
+  error.
+* Added the JSCompressionFilter.  Filter that does some simple compression on
+  javascript, that is, removing white spaces and line feeds. Both inline
+  javascript and seperate javascript files (*.js) can be handled.
+* Fixed a little omission in the ATP documentation about the possibility to
+  cancel an Ajax request by returning true from the preProc Javascript function.
+* Added the AjaxPartsTaglibValidateConfig context parameter for APT.  This
+  allows for turning off DTD validation of the APT configuration file to get
+  around a problem that seems to occur in some specified environments.  One
+  day we'll find the real cause and fix it for real, but for now this should
+  at least let people get back to work with a minimum of fuss.
+* Applied patch 1595353, courtesy of Colin Kilburn which changes all instances
+  of PAGE_SCOPE to REQUEST_SCOPE in APT.  This should allow developers to
+  use the new custom taglib style (i.e., .tag files) because now all handlers
+  and enable tags and such will be in the same scope, which wasn't the case
+  before.
+* Fixed an APT bug where custom handler were not registered and thus could not be
+  called without being registered by the developer him- or herself.
+
+
+-------------
+v1.0 Beta 6
+07/23/2006
+-------------
+* Fixed the build script to properly create AjaxParts package for Maven repo
+  and added pom_ajaxparts.xml to src/maven directory.
+* Addressed most of the FindBugs complaints.  I think what remains are not
+  actually bugs and can properly be ignored... It would be nice if we could
+  figure out how to disable certain tests, and also exclude the non-JWP
+  code in the core package, since we won't fix those.  Changes inlcuded:
+  - Made static members of all filters instance instead.  I actually thought
+    we had done this a while back, but I guess we just talked about it.
+    Not only did this resolve a number of FindBugs complaints, it allows
+    for multiple instances of filters now with different configurations.
+  - Some minor performance enhancements to APT due to iteration technique
+    changes.
+  - Reduction in code in all custom tags due to superfluous pageContext
+    member and mutator being removed.
+  - A couple of classes that wouldn't have properly serialized before
+    now will.
+* Added AjaxParts Taglib to Everything page.  Forgot to do that last
+  release!
+* D'oh!  Beta5 was broken... the test that shows the ability to use APT in an
+  AJAX response, one of the more important enhancements in beta5 frankly,
+  didn't work... it was nothing but a misconfiguration, no code change required,
+  but it's fixed now.
+* Added the ability to have multiple config files in the chain implementation.
+  Pass a comma-separated list to ChainManager when it is instantiated.  You
+  only need to do this the first time, ChainManager will subsequently realize
+  it's been initialized and not do so again.
+* Fixed a problem with APT where the streams to the config files were not
+  properly closed.
+* Split the chain_config.xml into 2 so that the ability to have multiple files
+  could be seen in action.
+
+
+-------------
+v1.0 Beta 5
+07/03/2006
+-------------
+* Fixed a bug in the FilterHelpers class.  There was some incorrect logic in
+  the filterPath() method to handle the situation where pathSpec and pathList
+  were both not present.
+* Changed build script to generate JARs with dashes in their names rather than
+  underscores.  This was done so that when we get JWP into the Maven repo at
+  iBiblio, the filesnames are consistent with what other components have done
+  out there.
+* Added "maven-repo" optional task to build script.  This generates the upload
+  bundles needed for the Maven repository at iBiblio.  This uses the pom.xml
+  files found in src/maven.
+* AjaxTags has been deprecated in favor of the AjaxParts Taglib.  The AjaxParts
+  package is where all AJAX functionality in JWP will live.
+* AjaxParts Taglib (APT), formerly AjaxTags, has been completely rewritten.
+  There are far too many changes to list here, so I suggest just reading the
+  javadocs.  This required changes to the test app and build script as well.  To
+  name just a few of the changes: you can now have multiple response handlers...
+  you can have a regex match pattern for each response handler so you can choose
+  to execute the handler or not based on what the server returns... you can
+  specify form, HTTP method and async on either the group level (which
+  replaces the <form> level), element level or event level... you can have a
+  pre-processing and post-processing function that will fire before and after
+  an AJAX reuest accordingly... you can now use the tags in a JSP that renders
+  the response to an AJAX request (no more manual workarounds!), you can
+  define error handlers for all HTTP response codes... and MUCH more!
+* Added FindBugs task to build script.  Next task is to actually address the
+  things it found!
+* Add new AjaxParts Taglib response handlers: std:DoNothing, which, as its name
+  implies, does nothing (it's NOT pointless, read the docs!), std:Redirecter,
+  which redirects the client based on either the response from the server, or
+  the URL hardcoded in the config file for the handler, and std:WindowOpener,
+  which opens the response from the server in a new window.
+
+
+
+-------------
+v1.0 Beta 4
+02/26/2006
+-------------
+* Modified AjaxTags event tag so that the original event handler code does not
+  get overwritten by the ajax event handler code. From now on, if there is
+  already an event handler present, the ajax event code will be appended to the
+  already present event handler code.
+* Modified build script to use AntForm for a nice graphical front-end.  Just
+  execute ant as before, and you will get a nice dialog where you can check off
+  the tasks to execute (no more editing build.properties!).  If you want to
+  bypass this GUI, use "-Dnogui=true" when executing the build script.  This
+  will use the current set of build control properties, i.e., the flags that
+  tell the script what tasks to execute, previously in build.properties, now
+  in build_control.properties and written out whenever the GUI is used.
+* Updated AjaxTags to be able to use an absolute or context-relative target
+  URL.  Very simply, if the value of the <target> element begins with a
+  forward-slash, then it is context-relative, which means the context path will
+  be prepended to the target.  If it is not present, then the target value is
+  rendered on the page literally as it appears in the config file.  Modifed
+  sample app to demonstrate this as well.
+* Updated some verbiage on the taglibs sample app page.  No big deal, just some
+  minor grammatical things, and expanded on the demonstration of how AjaxTags no
+  longer overwrites existing handlers.
+* Rewrote AjaxTags package documentation.  Should I think be much more useful
+  now!
+* Further modified build script so that there is only one "clean" task, and it
+  is always executed when a build starts and is never called automatically at
+  the end of a build.  That means that transient build artifacts are never
+  automatically removed except when another build is performed.  Tied to this
+  is a new "init" task that is where all initialization tasks like creating the
+  temp directory is done when a build is performed.
+* Modified both the std:InnerHTML and std:IFrame AjaxTags response handlers
+  to allow a comma-separated list of elements to work with.  Will always
+  populate them with the same content.
+* Added a new AjaXTags standard response handler, the stdFormManipulator. With
+  this handler you can change one or more (or all) the values of the elements
+  on your fields.  You can also change properties for the form and the elements.
+
+
+-------------
+v1.0 Beta 3
+01/22/2006
+-------------
+* Modified AjaxTags so that the <target> element always defines a
+  context-relative path.  Previously this behavior was undefined.
+* Corrected AjaxTags to always render the ajaxRequestSender() and page-scoped
+  variables.  Previously, this would only happen if standard handlers were
+  used, but since custom handlers can use it to, it needs to always be
+  rendered.
+* A parameter "ajaxRef" is now sent implicitly with every AJAX request sent
+  by AjaxTags.  This is so a server-side process can make a decision based on
+  what event was fired.  Note that this necessitated a change to the function
+  signatures of the ajaxRequestSender() function, as well as all handlers.
+  Documentation updated to reflect all this.
+* Added the ability to have multiple ajax-config files.  Simply supply all
+  of them in a comma-separated list in the ajaxTagsConfig init param.
+* Added the possibility to define static parameters in the target element.
+  E.g. <target>/Servlet?param1=abc&param2=123</target>. Previously, when used
+  with other parameters this could have caused problems.
+* Added the optional "debug" attribute on the "enable" tag in AjaxTags.
+  Acceptable values are "true" and "false" (default). Using debug="true"
+  generates information about the ajax request to be made and when returned in
+  a pop-up alert box.
+* Modified Chain so that the config file can be read from a JAR.  It can be
+  anywhere in the classpath now, including JAR files that get dynamically added.
+* Added the standard SimpleCommand to the Chain configuration.  This allows you
+  to extend it instead of implementing Command directly.  It provides default
+  implementations that returns Result.SUCCESS from all the methods, so you can
+  override just the ones you care about (which should probably be execute() in
+  all but the very oddest cases).
+* Added JSDigester to the JSTags library.  This is a trimmed-down client-side
+  implementation of the Commons Digester component.  It includes a subset of
+  rules only, just what I figured are probably the most common.
+* Added the Calendar widget to the UIWidgets taglib.  This is a relatively
+  typical popup calendar that features proper setup of days on days of the
+  week across all years and months, proper handling of leap years, a way to
+  configure the range of years shown, and a button to quickly select the
+  current date.  It always pops up centered on the screen and also hides all
+  <select> elements on the page first to avoid layer "bleed-through".
+* Modified the AjaxTags IFrame example to render the result via JSP, just to
+  demonstrate this is possible (and generally preferred).
+* Dealt with some CheckStyle complaints.
+* Fixed some errors that were present in Firefox with the Swapper UI widget.
+  Interestingly, these errors didn't seem to have any effect on it actually
+  working as expected, but they *were* present, so I took care of them.
+
+-------------
+v1.0 Beta 2
+01/08/2006
+-------------
+* Added a new tag to AjaxTags: <ajax:manual/>.  This renders a Javascript
+  function that the developer can then manually call to fire an event.  It
+  still uses all the standard handlers and the same generic form as all the
+  other tags.  The function name can be specified by the developer.
+* Updated and expanded AjaxTags documentation.
+* Fixed TLD files.  They had a UTF-8 BOM header in the front, which was
+  causing them to not work properly in some app servers.
+* Changed the AjaxTags demo page example that used innerText on a <div> to use
+  innerHTML instead (innerText is not supported in FireFox).  Thanks to
+  Keith Ulrich for pointing this out!
+* Added date/time stamp to assureUnique parameter for AjaxTags requests.
+  The simple index number previously used was not sufficient (which is
+  abundantly obvious in retrospect!).
+* Fixed a problem with the sendByID example that showed up in FireFox.  Had to
+  change the method to POST (not sure why it worked in IE as GET frankly, but
+  POST is in fact what should have been there all along anyway, so no big deal).
+* Modified the AjaxTags <timer> tag's startOnLoad functionality.  The first
+  event will always fire for the first time after the specified frequency has
+  elapsed.  This is because previously when the timeout was set to zero, the
+  timer could actually fire before the request handler was on the page, which
+  caused the timer to not function.  If you refreshed the page, because the
+  handler was now in cache, it would work subsequently.  This *should* deal
+  with that situation, however, for larger pages and small timeout frequencies,
+  the possibility still exists.  I presently see no foolproof way to deal with
+  this, so just be aware of it.
+* Added some extra log messages for AjaxTags when an unknown event type is
+  configured.
+* Added the stdIFrameDisplay AjaxTags response handler for writing returned
+  server output to an IFrame.
+* Modified build script to append version information to the name of all
+  generated JARs.
+* Added URLRedirectFilter.  This allows you to redirect (or forward) an incoming
+  request based on URL (with wildcard support) to another URL, local or
+  remote.
+* Changed fields in all servlets from static to non-static.  This means you can
+  now have multiple instances of a servlet, each with different init parameters.
+* Added the ResourceServlerServlet, along with three implementations of the
+  associated ResourceStream interface.  This servlet allows you to serve
+  resources of any type from a variety of sources, currently including from
+  within JAR files, off the file system (relative or absolute) and from
+  any URL.
+
+
+-------------
+v1.0 Beta 1
+12/18/2005
+-------------
+* Finally!  Java Web Parts is now bumped up to Beta status!  This is the first
+  beta-quality release!
+* Added a new stdAlerter AjaxTags response handler.  This will simply pop up
+  a Javascript alert() with whatever content the server returns.
+* Added a new tag to AjaxTags: <ajax:timer/>.  This allows you to use all the
+  usual AjaxTags functionality based on a timer.  Note that a timer tag
+  DOES NOT get attached to any page element, you can stick one anywhere (and
+  you can have as many as you want).  Check out the docs and the updated sample
+  app for all the details.  This required a change to the signature of all the
+  request handlers, adding the munged reference name and timer object to the
+  parameter list for all handlers, as well as the standard RequestSender, so any
+  custom request handlers you have written WILL NOT be backwards-compatible
+  (they should actually still work as-is, but since they are not aware of the
+  timer functionality they will not be usable with the timer tag.  A fair trade
+  for the added functionality I think).  All standard handlers have been
+  updated of course.
+* Fixed a reported bug with the Swapper UI Widget that caused the up arrow to
+  not have the bodyClass applied to it when present.
+* Dealt with a deprecation warning in the Swapper UI Widget code.  The only
+  deprecation warnings still present are those caused by the included Commons
+  code.
+* Added a dummy parameter appended to the end of every AJAX request in
+  AjaxTags that uses the standard RequestSender.  This dummy parameter is just
+  an incrementing number that is bumped with each request.  This ensures that
+  the request URL is always unique, which gets around IE's over-aggressive
+  (yet technically correct) caching function when the browser is set to
+  automatically determine is a page is stale or not.
+
+
+-------------
+v.15 Alpha
+12/05/2005
+-------------
+* Updated, cleaned up and expanded DependencyFilter documentation.
+* Applied some minor cleanup patches from Herman van Rosmalen.  No functional
+  changes, just cleanup of deprecated code.
+* Cleaned up and expanded documentation for AppConfigContextListener.
+* Added checks in all class to make sure all dependencies of that class that
+  are not part of standard Java, or in the same package, is present.  This
+  check is performed when the class is loaded by the classloader, so it's
+  immediate.  Failure messages are logged via System.err, so check the
+  appropriate destination location.  This was done because I used
+  AppConfigContextListener myself in a project and it was failing, my webapp
+  wasn't starting, and nothing was in the logs to indicate why.  I finally
+  figured out I forgot to include the core JAR in my webapp, which contains
+  classes the listener depends on.  This check should make such a situation
+  a heck of a lot easier to deal with in the future.
+* Added SendByID AjaxTags request handler.  This allows you to send any element
+  on the page that has an ID associated with it in an AJAX request, either as
+  part of a query string or an XML document.  Also added associated sample in
+  sample app and SendByIDTestServlet.  Check this out, I think it's one of the
+  more powerful standard handlers available.
+* Added getBodyContent() to RequestHelpers.  Useful for getting a String version
+  of the body content of an HTTP POST request.  Used by the SendByIDTestServlet
+  to parse the incoming XML from an AJAX request for example.
+
+
+-------------
+v.14 Alpha
+11/26/2005
+-------------
+* Committed mods from Herman van Rosmalen to allow AjaxTags to handle
+  simultaneous AJAX events.  Excellent, thanks a bunch Herman!
+* Added createForPaths attribute to DependencyFilter's <dependency> config
+  element. This allows you to specify what path(s) a given dependency should be
+  instantiated for.  Wildcards are supported in the same manner as all the
+  filters.
+* Modified the build script a little to make the distro target more complete.
+  It is now stand-alone in the sense that I don't have to remember to build
+  first, just executed distro and everything is done start-to-finish.
+
+
+-------------
+v.13 Alpha
+10/28/2005
+-------------
+* Fixed a bug in AjaxTags that caused Javascript errors when a page contained
+  elements that were part of an HTML form and others that weren't.  Big thanks
+  to Herman van Rosmalen for finding this!
+* Added the stdSelectbox response handler, sample and test servlet, courtesy
+  of Herman van Rosmalen.  Thanks Herman!
+* Fixed the javadoc comments on the CharacterEncodingFilter discussing the
+  encodingScheme parameter.  Sorry, made a cut-and-paste mistake!
+* Herman identified a situation where if a form element name had a period in
+  it, AjaxTags would cause a Javascript error.  This has been resolved, although
+  I suspect the situation would be rare anywhere.
+* Expanded AjaxTags documentation.
+* Add seven new tags to JSTags taglib.
+
+
+-------------
+v.12 Alpha
+10/09/2005
+-------------
+* Changed LayerCenter tag in JSTags to accept an object reference instead of an
+  ID.  This allows the caller more flexibility in using the function.
+* Added LocateSelectValue tag to JSTags.
+* Added stdCodeExecuter to AjaxTags and modified sample app to demonstrate it.
+  This is a really cool handler, check it out!
+* Added MD5 checksum generation to distro task in build script.
+* Modified ajax_config.xml file a bit... it was a little bit confusing, and
+  I tried to change that.
+* Added the misc.chain.commands package with its first classes: LoopStartCmomand
+  and LoopEndCommand.  These can be used to create a loop within a Chain.
+* Added the UIWidgets taglib and additions to sample app.  There is only a
+  single tag in it now: swapper.  I have A LOT planned for this taglib
+  though, and I think this is a decent start.
+
+
+-------------
+v.11 Alpha
+10/01/2005
+-------------
+* Added the javawebparts.misc.chain package and associated sample webapp test.
+  This is a CoR implementation that hopefully has some nice features that
+  give it more flexibility than expected (I still have a few on my list to add
+  later too!).  This was meant as the start of a new application framework, but
+  it is rather useful in its own right outside that project.
+* Added the CharacterEncodingFilter.  Simple filter to set the character
+  encoding scheme for a request when the client does not send one.
+* Outside dependencies, things like Commons Lang, are being factored IN to
+  JWP.  You will now find a javawebparts.core package which includes source
+  taken from other libraries.  The new generated javawebparts_core.jar is
+  REQUIRED to go along with the individual JARs you want to use.  Also note that
+  the JWPHelpers class has been moved to this "core" packages, which only makes
+  sense, and any other "common"-type code will be here as well.  The only
+  remaining dependency is Commons Logging, and there are some reasons to NOT
+  integrate that one, so I'm not sure it will go in just yet.
+* Some miscellaneous changes to the build script to accomodate the move to
+  integrating outside dependencies.
+* Updated Commons Collections to v3.1 and Commons Digester to v1.7.
+* Fixed the Everything page in the sample app.  The mapping for the
+  DependencyFilter was too narrow and that page threw an NPE.
+* Some minor reorganizations and changes to build setup... TLDs are now in
+  WEB-INF/src/tlds and the build script now includes a target that copies
+  over any files that have to be in the classpath to WEB-INF/classes.  The
+  only file thus far is chain_config.xml.  Also, the build_distro target is
+  now completely optional and not controllable from build.properties.
+* Added maxAge attribute to <dependency> element for DependencyFilter.  This
+  allows you to "expire" objects that are session-scoped after a specified
+  number of seconds, after which time they will be recreated.  This is nice if
+  you want to have a bean in a users' session that maintains a list of values
+  read from a database but you want the values to be refreshed every few
+  minutes.
+* Removed a package cross-dependency between the taglib package (because of
+  the basicstr taglib) and the response package (moved encodeEntities() to
+  JWPHelpers).  There is currently *NO* package cross-dependencies!
+* Added the RedirectReturnerServlet.  This has quite a few uses, things like
+  random web site links and rotating ad banners among them.
+* Did some refactoring of the TextReturnerServlet and TextItems class.  The
+  TextItems class is now the Items class and is shared with the
+  RedirectReturnerServlet as well.
+* Added the JSTags taglib.  There's not a ton of stuff there now, but it will
+  grow over time because I have a backlog of stuff to add to it without even
+  thinking about new stuff!
+
+
+-------------
+v.10 Alpha
+09/17/2005
+-------------
+* Updated status of JWP to alpha.
+* Added updateDependency() method to DependencyFilter.  It was stubbed out in
+  the final release but was not implemented.  Also added test of it to the
+  sample app.
+* Changed logging in DependencyFilter from println's to normal logging.  This
+  was an oversight in the initial release, fortunately not a critical one.
+* Modified Checkstyle rules and dealt with a few more complaints.
+* Factored out DependencyConfig from DependencyFilter.
+* Added the ability to initialize arrays to DependencyFilter.
+* Fixed a bug with the CompressionFilter with regard to stream creation.
+* Fixed a bug with the DependencyFilter that caused it to not initialize all
+  members of Lists or Maps or Arrays.
+
+
+-------------
+v.9 Pre-Alpha
+09/06/2005
+-------------
+* Moved dependency lists from individual classes to only the package level,
+  which is where they are actually relevant.
+* Externalized build scripts to a properties file.  Also added some new
+  flexibility so that the build process is modifiable easily via the
+  properties file.
+* Finally: a "make_distro" task in the build script!  My life is much
+  easier now!
+* Added "logging" target to build script.  This copies in configuration files
+  to WEB-INF/classes to configure Commons Logging's simple logger for
+  development purposes.
+* Fixed a problem with the build script where the TLDs were not added to the
+  taglib JAR.
+* Added the DependencyFilter.  This is a hybrid IoC provider.  I don't mind
+  saying I think it's kinda neat, so have a look and see if you like it!
+
+
+-------------
+v.8 Pre-Alpha
+08/20/2005
+-------------
+* The build script now uses the ant-dependencies add-on task (don't worry, it's
+  included, you don't have to do anything!) to download compiletime
+  dependencies from the Maven iBiblio repository.  Much smaller source
+  distribution size!  Runtime JARs are still included though.
+* CheckStyle 3.4 is now used instead of 3.5 previously.  Since CheckStyle is
+  a compiletime depencency, and since iBiblio only has up to 3.4 currently,
+  this was necessary.  I'll update to 3.5 (or 4.0 maybe?) when it's in the
+  repository.
+* Fixed a problem with the sample app that caused Javascript errors on some of
+  the filter target JSPs.
+* Java Web Parts is now standardized on servlet spec 2.3, JSP spec 1.2 and
+  JDK 1.4.2.  JARs and dependencies have been updated to reflect that.  Only
+  one minor change was required in one filter to be compatible, and thus far
+  no problems have surfaced related to this version change.
+* Did some other general refactoring of the build script.  Reduced the number
+  of properties and theoretically made it slightly more flexible.  Also
+  added the encoding attribute to the javac and javadoc tasks to get
+  JWP to build properly under Linux (had some warnings before).  The main build
+  target was changed from a list of dependencies to a series of antcalls and
+  the dependencies task is a macrodef.
+* Taglib TLDs are now included in the javawebparts_taglib.jar file.  Makes it
+  a little easier for developers to use the JWP taglib subcomponent.
+* Added a "debug" target to the build script.  It will start JSwat if it is
+  installed (see the two properties you'll need to set).  Nice for us non-IDE
+  developers :)
+* Fixed the CompressionFilter.  It wouldn't work if you did a forward in a
+  servlet to a JSP, only redirects or direct resource requests worked.  A big
+  thanks to William Vuong for pointing this out and helping to track the
+  problem down.
+* A change was made to ensure proper path checking for filters that support
+  the pathSpec and pathList init parameters.  Although the check seemed to
+  work before, this will ensure it does under all circumstances.
+* Added generateGUID() method to RequestHelpers class.  Good for keeping track
+  of logging statements and things of that nature.
+* Added TextRendererServlet and associated test to sample app.  This servlet
+  allows you to render a string of text with given font criteria and return
+  the image.  Useful for graphical hit counters, dynamic user-specific
+  header graphics, etc.  The function that renders the text can also be used
+  from your own code, just treat the servlet like any other class and call
+  the renderText() method yourself.  See the javadocs for full details.
+
+
+-------------
+v.7 Pre-Alpha
+08/07/2005
+-------------
+* Fixed some screwed up javadoc comments in various classes, mostly filters,
+  but a few others.  Needed some linebreaks (where things were originally in
+  a <pre> block) and some other minor fixups along those lines.
+* Added the ability to AjaxTags to enable events on page elements that are
+  not part of a form.  This means links, DIVs, images, or theoretically any
+  other page element!  Be sure to read the updated package javadocs for all
+  the pertinent details.
+* Added the SessionLimiterFilter/SessionLimiterListener combination that
+  was contributed by Tamas Szabo.
+* Got rid of clean.xml and moved it into build.xml as a target.
+* Refactored sample app so that each JWP package is represented by it's own
+  sub-page.  This was suggested by Tamas Szabo (I had been thinking the same
+  thing before that, but he kind of nudged me along!).  There is also a
+  link for an "everything" page that is much like the sample used to be in
+  that everything that is on the sub-pages is on a single page.  This is
+  good to prove all the parts work together and have no conflicts with one
+  another.
+* Did some refactoring of the filterPath() method in FilterHelpers to
+  address a concern Tamas Szabo raised about getting the path.  Even though
+  the code as written appears to work as expected, this will allow us to
+  very easily change it if his concern becomes an issue.
+* Added the ability to execute a <script> block returned and rendered with the
+  stdInnerHTML response handler of AjaxTags.  This allows you to return some
+  script and execute it (one time only!) upon its return.  This enhancement was
+  contributed by Zaid A. Omar.
+* Addressed CheckStyle complaints.
+* Added contributors link to sample app.
+
+
+-------------
+v.6 Pre-Alpha
+07/29/2005
+-------------
+* Fixed a bug in the getCookieValue() method of RequestHelpers that would cause
+  the sample to not work the first time through.
+* Added the RequestRecorderFilter, which can serve as the basis for very simple
+  load tests of app debugging.
+* Added the new misc package and within it the RecordedRequestPlayer class.
+  This is a simple Java application which can be run from the command line and
+  can play back a sequence of requests recorded by the RequestRecorderFilter.
+  It can simulate a specified number of virtual users running through the
+  requests.  This can be handy for simplistic load testing.  It only supports
+  GET and POST methods, and only supports form-encoded submissions (i.e., no
+  multiparts and such), but even still I think it may be handy.  It writes
+  everything to stdout at present, so for now if you want a record of a run
+  you will have to redirect as appropriate for your OS (more options to be
+  added later!).
+* Added IPAccessControlFilter, which allows you to allow or deny access to
+  given resources based on IP address of the client.
+* Expanded the AjaxTags documentation to cover writing custom request/response
+  handlers.
+* Added a new "method" attribute to the <requestHandler> element in ajax-config
+  to allow you to specify what HTTP method (GET or POST) will be used by that
+  handler.  This allows for larger than 1K to be sent (which is a limitation
+  of the GET method).
+* Refactored some of the class named in AjaxTags to avoid some static analysis
+  errors.  Also reduced some logging that made them very "chatty".
+* Added links from the sample app directly to the javadoc page for each test
+  case.
+* Added the new SessionInactivityFilter and associated test.  Use this to
+  redirect or forward to a specified page when a session times out.  Be sure
+  to read the documentation on this one as it can be slightly tricky to
+  configure properly!
+* Generally expanded on documentation in a number of places.
+
+
+-------------
+v.5 Pre-Alpha
+07/16/2005
+-------------
+* Fixed a bug in the CrossSiteScriptingFilter.  The default sequence was
+  using entity encodings, which caused some things to be caught that shouldn't
+  have been.  Also added some extra logging.
+* Factored out some common code into a new JWPHelpers class in the javawebparts
+  package and updated build script to include it in all JARs.
+* Added ContextSize class, as suggested by Wendy Smoak, and added example to
+  webapp.  It works identically to SessionSize, but for ServletContext.
+* Added BasicStr taglib.  Lots of tags in it, have a look!
+* Added getCookies() method to RequestHelpers as suggested by Wendy Smoak.
+* As suggested by Wendy Smoak (anyone seeing a pattern here?!?) all methods
+  in the public interface that returned specific collection classes like
+  HashMap and ArrayList now return interface type (Map and List correspondingly)
+  so that implementation changes can be made later without affecting outside
+  code.
+* Added a new clean.xml Ant script that can be run by anyone doing development
+  before doing CVS diffs.  Gets rid of any generated files and directories.
+  I think I prefer it as a separate script rather than part of build.xml so
+  you don't have to go altering the build script to execute the target.  Hope
+  no one disagrees too strenuously :)
+* Renamed the BypassCheck and MungerResWrapper classes in the filter package to
+  AppAvailabilityBypassCheck and ParameterMungerResWrapper correspondingly.
+* Fixed a bug in the ElapsedTimeFilter: it wasn't honoring the pathList and
+  pathSpec init parameters.
+* Implemented jump to anchors from servlets as suggested by Wendy Smoak.
+
+
+-------------
+v.4 Pre-Alpha
+07/08/2005
+-------------
+
+* Added the CrossSiteScripting filter config to web.xml (the filter was
+  present in v.3, but the web.xml entries got removed by mistake)
+* Added log.xsl to src directory for displaying the build log if you
+  build from source and generate a build log with Ant.
+* Some aesthetic changes in the sample app as suggested by Wendy Smoak
+  (I still think if you had just found some stronger coffee it would have
+  been OK though!)
+* Added the ability to ignore non-serializable objects in session when
+  calculating size.  To do this, call SessionSize.setIgnoreNonSerializable(true)
+  before calling getSessionSize().  By default, non-serializable objects are
+  still ignored like before, which equates to passing false to this method.
+  Added an example to the sample app.  This feature was suggested by
+  Wendy Smoak.
+* Added getCookie() and getCookieValue() methods to RequestHelpers, both
+  contributed by Wendy Smoak.  Also added section to sample app to test them.
+* Modified build script so that by default the javadocs are generated in the
+  root of the webapp, and added a link to them from index.jsp.  The javadocs
+  will now be included with the bin distro.
+
+
+-------------
+v.3 Pre-Alpha
+07/01/2005
+-------------
+
+* History file established.
+* Javadoc comments fixed up and expanded for all applicable classes.
+* Added CrossSiteScripting filter and sample to sample app.
+* Refactored filters so that pathSpec and pathList are dealth with in a
+  centralized location (FilterHelpers).  At the same time I made them optional
+  parameters with well-defined behaviors when they are present or not present
+  in various combinations.
+* Changed all log messages that displayed the name of the class to use
+  getClass().getName() (makes for easier refactoring in these early stages).
+* Added history file link to index.jsp.
+* Added AjaxTags taglib.  This is a conversion of the AjaxTags project
+  I did specifically for Struts.  Now it's generic!  Be sure to review
+  the javadocs for all the details available at
+  http://javawebparts.sourceforge.net
+
+
+-------------
+v.2 Pre-Alpha
+06/26/2005
+-------------
+
+* History file was not established yet, so no entries here.
+
+
+-------------
+v.1 Pre-Alpha
+06/10/2005
+-------------
+
+* This was the initial release!

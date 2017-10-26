@@ -1,0 +1,1548 @@
+<body>
+
+  The AjaxParts Taglib (APT).
+  <br><br>
+
+  <h2>Table Of Contents</h2>
+  <a href="#intro">Introduction To APT</a><br>
+  <a href="#using">Using APT</a><br>
+  <a href="#basic">Basic APT Concepts</a><br>
+  <a href="#configuring">Configuring APT</a><br>
+  <a href="#referencing">Referencing Configurations</a><br>
+  <a href="#tagref">Tag reference</a><br>
+  <a href="#handlers">Standard Handlers</a><br>
+  <a href="#custom">Writing Custom Handlers</a><br>
+  <a href="#notes">General Notes</a><br>
+  <a href="#jsonp">JSON-P Support</a>
+
+  <br><br><br>
+
+  <!-- ******************************************************************** -->
+  <!-- Introduction to APT                                                  -->
+  <!-- ******************************************************************** -->
+  <h2><a name="intro">-- Introduction To APT --</a></h2>
+  APT is a JSP taglib for attaching AJAX events to any element on an HTML
+  page, allowing you to use AJAX techniques (Asynchronous Javascript with XML)
+  in response to any user interface event (or as a result of a timer, or
+  manually called from your own code) without having to write any code (at
+  least, none you don't choose to write).  APT is XML configuration file
+  driven and consists of only four custom tags, and only two are used on a
+  regular basis, the others less frequently.  It is useful for adding AJAX to
+  existing applications as it requires <b>NO</b> changes to your existing pages,
+  just a few simple additions in the form of a new taglib declaration and
+  adding the APT tags in the appropriate places, plus an addition to web.xml.
+  For new apps it is of course ideal too because it will save you from having
+  to write all the client-side AJAX code yourself.
+  <br><br>
+  Note that APT says <b>NOTHING</b> about what happens on the server-side of the
+  interaction.  It is strictly concerned with the client-side of the AJAX
+  equation.  There may be some other parts in Java Web Parts that helps with the
+  server-side though!
+  <br><br>
+  APT began its life as an enhanced version of the Struts HTML taglib, but
+  was subsequently modified to be framework-agnostic.  You should be able to use
+  APT with any application framework, or with no framework at all, the choice
+  is entirely yours!
+  <br><br><br>
+
+  <!-- ******************************************************************** -->
+  <!-- Using APT                                                            -->
+  <!-- ******************************************************************** -->
+  <h2><a name="using">-- Using APT --</a></h2>
+  Before anything else, let's look at the steps you will go through to use
+  APT in your own application.
+  <br><br>
+  <ol>
+    <li>
+      Add the javawebparts-ajaxparts-xxxx.jar and the javawebparts-core-xxxx.jar
+      to your application, usually in the WEB-INF/lib directory, where xxxx is
+      the version you are deploying.
+    </li>
+    <br><br>
+    <li>
+      Add a context parameter to your web.xml file that will point to your
+      ajax-config.xml file(s) like so:
+      <br><br>
+      &lt;context-param&gt;<br>
+      &nbsp;&nbsp;&lt;param-name&gt;AjaxPartsTaglibConfig&lt;/param-name&gt;<br>
+      &nbsp;&nbsp;&lt;param-value&gt;/WEB-INF/ajax-config.xml
+      &lt;/param-value&gt;<br>
+      &lt;/context-param&gt;
+      <br><br>
+      This is a context-relative path, which can of course be whatever you like,
+      as can the name of the file itself.  However, you may want to stick with
+      the location and name shown here as they are the recommended values (and
+      also what will be used throughout this documentation).
+      <br><br>
+      Building this configuration file is covered in the Configuring APT
+      section.  Building that file is in fact a required step here as well
+      though!
+      <br><br>
+      OPTIONAL: In some environments and under certain circumstances, there can
+      be a problem with DTD validation of the configuration file.  This can be
+      avoided by setting another context paramete:
+      <br><br>
+      &lt;context-param&gt;<br>
+      &nbsp;&nbsp;&lt;param-name&gt;AjaxPartsTaglibValidateConfig&lt;/param-name&gt;<br>
+      &nbsp;&nbsp;&lt;param-value&gt;false
+      &lt;/param-value&gt;<br>
+      &lt;/context-param&gt;
+      <br><br>
+      Setting this parameter to "false" disabled validation of the configuration
+      file.  Setting it to "true", or not setting it at all, leaves validation
+      turned on, which is the default action.
+    </li>
+    <br><br>
+    <li>
+      Add the taglib declaration to any JSP that will use APT, like so:
+      <br><br>
+      &lt;%@ taglib prefix=&quot;ajax&quot;
+      uri=&quot;javawebparts/ajaxparts/taglib&quot; %&gt;
+      <br><br>
+      The prefix can be whatever you like of course, although &quot;ajax&quot;
+      is recommended.  Note that the TLD is contained in the
+      javaweparts-ajaxparts-xxx.jar file, so you don't need to worry about it.
+    </li>
+    <br><br>
+    <li>
+      For any page element you wish to attach an AJAX event to, add the
+      following tag after it:
+      <br><br>
+      &lt;ajax:event ajaxRef=&quot;xxxx/yyyy&quot;
+      attachTo=&quot;xxxx/yyyy&quot;/&gt;
+      <br><br>
+      There are two ways you can do this.  First, the original way, is that
+      this tag <b>MUST</b> come <b>IMMEDIATELY</b> after the element to attach
+      to.  Note that <b>IMMEDIATELY</b> means <b>IMMEDIATELY</b>!!  There can be
+      <b>NOTHING</b> between the tag you wish to AJAX-enable and this tag,
+      <b>NOT EVEN WHITESPACE</b>!!  The only exception to this rule is elements
+      like checkboxes and radios where you normally follow them with some text.
+      This is OK, the emitted Javascript will handle these cases.  In this
+      case, you <b>SHOULD NOT</b> include the attachTo attribute.
+      <br><br>
+      The alternative new method, <b>which is the recommended method</b>, is to
+      use the attachTo attribute.  The value of this attribute is the DOM ID
+      of the element to attach the event to.  When you use this approach, the
+      event tag can come anywhere on the page, it does not need to follow the
+      element to be AJAX-enabled, although it is recommended that you in fact
+      do keep them near each other.
+      <br><br>
+      The meaning of ajaxRef is covered in the
+      &quot;Referencing Configurations&quot; section, but suffice it for now to
+      say that it links the element you are attaching an AJAX event to with the
+      appropriate configuration in ajax-config.xml.
+    </li>
+    <br><br>
+    <li>
+      <b>AFTER</b> all &lt;ajax:event&gt; tags on the
+      page, add the following tag:
+      <br><br>
+      &lt;ajax:enable/&gt;
+      <br><br>
+      <b>It is VERY important that this come AFTER all AJAX tags on the page.
+      The recommended location is right before the closing &lt;/body&gt;
+      tag.</b>
+    </li>
+  </ul>
+  <br><br>
+
+  <!-- ******************************************************************** -->
+  <!-- Basic APT Concepts                                                   -->
+  <!-- ******************************************************************** -->
+  <h2><a name="basic">-- Basic APT Concepts --</a></h2>
+  APT works by hooking a UI event like onClick or onMouseOver, and firing
+  an AJAX request in response.  It can also fire AJAX events in response to a
+  timer, as well as expose Javascript functions for you to manually call to fire
+  an AJAX request.
+  <br><br>
+  APT works by defining an event in the ajax-config.xml file, and then
+  attaching it to a given element on the page by placing the &lt;ajax:event/&gt;
+  tag after it.  For each event configured, a request handler and a response
+  handler (or multiple response handlers) is defined.  A request handler is a
+  Javascript function that forms some sort of request, be it an XML document,
+  a simple query string, or something else entirely, and sends it to a defined
+  URI.  A response handler is what takes the response from the remote system
+  and does something with it, be it updating a &lt;div&gt;, populating a
+  &lt;select&gt; or something else.  APT comes packaged with a number of very
+  common and powerful handlers, but you can also write your own to suite your
+  needs.  We have found that a majority of the time, the packaged handlers
+  (calls standard handlers) suffice for most peoples' needs.
+  <br><br><br>
+
+  <!-- ******************************************************************** -->
+  <!-- Configuring APT                                                      -->
+  <!-- ******************************************************************** -->
+  <h2><a name="configuring">-- Configuring APT --</a></h2>
+  As mentioned previously, APT is a declarative approach to AJAX, which
+  means all you need to do is write an XML configuration file to drive it, no
+  mucking around with Javascript (usually).  The
+  following is a basic outline of the configuration file.
+  <br><br>
+  &lt;ajaxConfig&gt;<br>
+  &nbsp;&nbsp;&lt;handler name=&quot;&quot; type=&quot;&quot;&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&lt;function&gt;&lt;/function&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&lt;location&gt;&lt;/location&gt;<br>
+  &nbsp;&nbsp;&lt;/handler&gt;<br>
+  &nbsp;&nbsp;&lt;group ajaxRef=&quot;&quot; async=&quot;&quot;
+   method=&quot;&quot; form=&quot;&quot; preProc=&quot;&quot;
+  postProc=&quot;&quot;&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&lt;errroHandler code=&quot;&quot;
+  type=&quot;&quot; /&gt;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+  &nbsp;&nbsp;&nbsp; &lt;element ajaxRef=&quot;&quot; async=&quot;&quot;
+  method=&quot;&quot; form=&quot;&quot;
+  preProc=&quot;&quot; postProc=&quot;&quot;&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;errroHandler code=&quot;&quot;
+  type=&quot;&quot; /&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;event
+  type=&quot;&quot; async=&quot;&quot;
+  method=&quot;&quot; form=&quot;&quot; preProc=&quot;&quot;
+  postProc=&quot;&quot;&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;errroHandler
+  code=&quot;&quot; type=&quot;&quot; /&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;requestHandler
+  type=&quot;&quot; target=&quot;&quot; jsonp=&quot;&quot;&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  &lt;parameter&gt;&lt;/parameter&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/requestHandler&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;responseHandler
+  type=&quot;&quot; matchPattern=&quot;&quot;&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;parameter&gt;
+  &lt;/parameter&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/responseHandler&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/event&gt;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&lt;/element&gt;<br>
+  &nbsp;&nbsp;&lt;/group&gt;<br>
+  &lt;/ajaxConfig&gt;
+  <br><br>
+  The following table summarizes each element.
+  <br><br>
+  <table border="1" cellpadding="2" cellspacing="2" width="98%" align="center">
+    <tr>
+      <td valign="top">ajaxConfig</td>
+      <td>This is simply the root element of the document.
+        <br><br>
+        Attributes: None.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ajaxConfig/handler</td>
+      <td>
+        This element is used to define a custom handler (request, response or
+        error).  This is entirely optional!
+        <br><br>
+        Attributes:
+        <br>
+        <ul>
+          <li>
+            <b>name (required)</b>- Gives a name to the handler that you will
+            reference later in the config file
+          </li>
+          <br><br>
+          <li>
+            <b>type (required)</b>- Is one of three values, &quot;request&quot;,
+            &quot;response&quot; or &quot;error&quot;, which defines whether
+            this is a request handler, a response handler or an error handler
+            (must be lower-case).
+          </li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ajaxConfig/handler/function</td>
+      <td>
+        This names the Javascript function that implements this handler.  Note
+        that this function must adhere to a specific signature, which is
+        described later in the &quot;Creating Custom Handlers&quot; section.
+        <br><br>
+        Attributes: None.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ajaxConfig/handler/location</td>
+      <td>
+        This defines where the function can be found.  It can be one of two
+        things, either the value &quot;local&quot;, which means that you are
+        taking full responsibility for ensuring the function is on the page
+        (however you wish to accomplish that) or a URL to an external file.
+        In the later case, a &lt;script&gt; tag will be rendered with the src
+        attribute set to the value you provide here, so it can be any value that
+        would normally be valid in a &lt;script&gt; tag.  <b>Note that if the
+        value &quot;local&quot; is used, you must take care to ensure that the
+        handler code appears before the &lt;ajax:enable&gt; tag!</b>
+        <br><br>
+        Attributes: None.
+      </td>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ajaxConfig/group</td>
+      <td>This element defines a group of AJAX-enabled elements.  A group will
+        most usually represent a single JSP page, but this is NOT a requirement!
+        You can create arbitrary groups as you see fit.
+        <br><br>
+        Attributes:
+        <br>
+        <ul>
+          <li>
+            <b>ajaxRef (required)</b>- For each &lt;group&gt; in your
+            ajax-config.xml file, you need to specify a unique ajaxRef value
+            for it.  It can be anything you like.  <b>Note that this value IS
+              case-sensitive!</b>
+          </li>
+          <br><br>
+          <li>
+            <b>async (optional)</b>- This attribute takes one of two values:
+            &quot;true&quot; or &quot;false&quot; (must be lower-case).
+            You will almost always want this to be &quot;true&quot;, and that
+            is the default value at group-level (see comments following this
+            table for what the different scope levels mean).  If this is set to
+            false, then no Javascript on the client will execute until the
+            response has been received by the client.
+            Defaults to &quot;true&quot;.
+          </li>
+          <br><br>
+          <li>
+            <b>method (optional)</b>- This attribute takes one of the following
+            values: &quot;head&quot;, &quot;get&quot;, &quot;post&quot;,
+            &quot;put&quot;, &quot;delete&quot;, &quot;trace&quot;,
+            &quot;options&quot;, &quot;connect&quot; (must be lower-case).
+            Defaults to &quot;post&quot;.
+          </li>
+          <br><br>
+          <li>
+            <b>form (optional)</b>- This attribute gives the name of an HTML
+            form that the request handler will use, if the choosen request
+            handler works with a form at all.  You can use the special value
+            &quot;parent&quot; here to indicate the handler should use the
+            parent form of the element that fired the AJAX event.  However,
+            the &quot;parent&quot; value <b>IS NOT VALID</b> for events of
+            type &quot;manual&quot; or &quot;timer&quot;.
+            <b>Note that this value IS case-sensitive!  </b>Defaults to
+            &quot;parent&quot;.
+          </li>
+          <br><br>
+          <li>
+            <b>preProc (optional)</b>- This attribute names a Javascript
+            function that will be called before the AJAX request is made to the
+            server.  Returning <b>true</b> from this Javascript function will
+            cause the AJAX request to be canceled. <b>Note that this value IS
+            case-sensitive!</b>
+          </li>
+          <br><br>
+          <li>
+            <b>postProc (optional)</b>- This attribute names a Javascript
+            function that will be called after the AJAX request returns from the
+            server, and also after the response handler(s) have finished, and
+            after all &lt;script&gt; blocks in the server's response have been
+            executed.  <b>Note that this value IS case-sensitive!</b>
+          </li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ajaxConfig/group/errorHandler</td>
+      <td>This element defines a handler that will deal with a specific HTTP
+        response code for all elements within the group.  You can define as
+        many as you like per group, or none at all, but you must only define
+        one per HTTP response code!
+        <br><br>
+        Attributes:
+        <br>
+        <ul>
+          <li>
+            <b>code (required)</b>- This is the HTTP respone code this handler
+            will handle.  Can be any HTTP response code, i.e., 404, 500, etc.
+          </li>
+          <br><br>
+          <li>
+            <b>type (required)</b>- This is the type of handler to use.  This
+            can be either the &quot;name&quot; attribute of a custom handler
+            defined in the ajax-config.xml file, or a value that begins with
+            &quot;std:&quot;, for instance &quot;std:AlertErrorHandler&quot;.
+            This means it is one of the built-in &quot;standard&quot; APT
+            handlers.
+          </li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ajaxConfig/group/element</td>
+      <td>
+        This element represents an element on the page you will attach an AJAX
+        event to.
+        <br><br>
+        Attributes:
+        <br>
+        <ul>
+          <li>
+            <b>ajaxRef (required)</b>- For each &lt;element&gt; in your
+            ajax-config.xml file, you need to specify a unique ajaxRef value for
+            it.  It can be anything you like.  <b>Note that this value IS
+              case-sensitive!</b>
+          </li>
+          <br><br>
+          <li>
+            <b>async (optional)</b>- This attribute takes one of two values:
+            &quot;true&quot; or &quot;false&quot; (must be lower-case).
+            You will almost always want this to be &quot;true&quot;, and that
+            is the default value at group-level (see comments following this
+            table for what the different scope levels mean).  If this is set to
+            false, then no Javascript on the client will execute until the
+            response has been received by the client.
+            Defaults to &quot;true&quot;.
+          </li>
+          <br><br>
+          <li>
+            <b>method (optional)</b>- This attribute takes one of the following
+            values: &quot;head&quot;, &quot;get&quot;, &quot;post&quot;,
+            &quot;put&quot;, &quot;delete&quot;, &quot;trace&quot;,
+            &quot;options&quot;, &quot;connect&quot; (must be lower-case).
+            Defaults to &quot;post&quot;.
+          </li>
+          <br><br>
+          <li>
+            <b>form (optional)</b>- This attribute gives the name of an HTML
+            form that the request handler will use, if the choosen request
+            handler works with a form at all.  You can use the special value
+            &quot;parent&quot; here to indicate the handler should use the
+            parent form of the element that fired the AJAX event.  However,
+            the &quot;parent&quot; value <b>IS NOT VALID</b> for events of
+            type &quot;manual&quot; or &quot;timer&quot;.
+            <b>Note that this value IS case-sensitive!</b>  Defaults to
+            &quot;parent&quot;.
+          </li>
+          <br><br>
+          <li>
+            <b>preProc (optional)</b>- This attribute names a Javascript
+            function that will be called before the AJAX request is made to the
+            server.  Returning <b>true</b> from this Javascript function will
+            cause the AJAX request to be canceled. <b>Note that this value IS
+            case-sensitive!</b>
+          </li>
+          <br><br>
+          <li>
+            <b>postProc (optional)</b>- This attribute names a Javascript
+            function that will be called after the AJAX request returns from
+            the server, and also after the response handler(s) have finished,
+            and after all &lt;script&gt; blocks in the server's response have
+            been executed.  <b>Note that this value IS case-sensitive!</b>
+          </li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ajaxConfig/group/element/errorHandler</td>
+      <td>This element defines a handler that will deal with a specific HTTP
+        response code for all events within the element.  You can define as
+        many as you like per element, or none at all, but you must only define
+        one per HTTP response code!  Note that if you define a handler here that
+        handles the same code as a handler defiend at the group level, this
+        handler definition will override those definitions.
+        <br><br>
+        Attributes:
+        <br>
+        <ul>
+          <li>
+            <b>code (required)</b>- This is the HTTP respone code this handler
+            will handle.  Can be any HTTP response code, i.e., 404, 500, etc.
+          </li>
+          <br><br>
+          <li>
+            <b>type (required)</b>- This is the type of handler to use.  This
+            can be either the &quot;name&quot; attribute of a custom handler
+            defined in the ajax-config.xml file, or a value that begins with
+            &quot;std:&quot;, for instance &quot;std:AlertErrorHandler&quot;.
+            This means it is one of the built-in &quot;standard&quot; APT
+            handlers.
+          </li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ajaxConfig/group/element/event</td>
+      <td>
+        This element defines an event that will fire an AJAX request on the
+        parent element.
+        <br><br>
+        Attributes:
+        <br>
+        <ul>
+        <li>
+          <b>type (required)</b>- This can be any of the following standard
+          Javascript UI events: onblur, onfocus, onchange, onclick,
+          oncontextmenu, onkeydown, onkeypress, onkeyup, onmousemove,
+          onmouseout, onmouseover, onmouseup, onmousedown, onresize, onscroll,
+          onselect.  This value MUST be lower-case.  It can also be one of two
+          special values, &quot;manual&quot;, which means this will fire in
+          response to a developer calling a rendered Javascript function
+          manually, and &quot;timer&quot;, which means this will fire in
+          response to a timer.  <b>Note that only a single event of type
+          &quot;manual&quot; or &quot;timer&quot; should be defined per element!
+          In fact, logically, any element that has one of hese types of events
+          should have no other events defined for it.  This would be considered
+          a misconfiguration, and would yield undefined behavior!</b>
+        </li>
+        <br><br>
+        <li>
+          <b>async (optional)</b>- This attribute takes one of two values:
+          &quot;true&quot; or &quot;false&quot; (must be lower-case).
+          You will almost always want this to be &quot;true&quot;, and that is
+          the default value at group-level (see comments following this table
+          for what the different scope levels mean).  If this is set to false,
+          then no Javascript on the client will execute until the response has
+          been received by the client.  Defaults to &quot;true&quot;.<br><br>
+          <li>
+            <b>method (optional)</b>- This attribute takes one of the following
+            values: &quot;head&quot;, &quot;get&quot;, &quot;post&quot;,
+            &quot;put&quot;, &quot;delete&quot;, &quot;trace&quot;,
+            &quot;options&quot;, &quot;connect&quot; (must be lower-case).
+            Defaults to &quot;post&quot;.
+          </li>
+          <br><br>
+          <li>
+            <b>form (optional)</b>- This attribute gives the name of an HTML
+            form that the request handler will use, if the choosen request
+            handler works with a form at all.  You can use the special value
+            &quot;parent&quot; here to indicate the handler should use the
+            parent form of the element that fired the AJAX event.
+            However, the &quot;parent&quot; value <b>IS NOT VALID</b> for
+            events of type &quot;manual&quot; or &quot;timer&quot;.
+            <b>Note that this value IS case-sensitive!  </b>Defaults
+            to &quot;parent&quot;.
+          </li>
+          <br><br>
+          <li>
+            <b>preProc (optional)</b>- This attribute names a Javascript
+            function that will be called before the AJAX request is made to the
+            server. Returning <b>true</b> from this Javascript function will
+            cause the AJAX request to be canceled.  <b>Note that this value IS
+            case-sensitive!</b>
+          </li>
+          <br><br>
+          <li>
+            <b>postProc (optional)</b>- This attribute names a Javascript
+            function that will be called after the AJAX request returns from
+            the server, and also after the response handler(s) have finished,
+            and after all &lt;script&gt; blocks in the server's response have
+            been executed.  <b>Note that this value IS case-sensitive!</b>
+          </li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ajaxConfig/group/element/event/errorHandler</td>
+      <td>This element defines a handler that will deal with a specific HTTP
+        response code for this event.  You can define as many as you like per
+        event, or none at all, but you must only define one per HTTP response
+        code!  Note that if you define a handler here that handles the same
+        code as a handler defiend at the element or group level, this handler
+        definition will override those definitions.
+        <br><br>
+        Attributes:
+        <br>
+        <ul>
+          <li>
+            <b>code (required)</b>- This is the HTTP respone code this handler
+            will handle.  Can be any HTTP response code, i.e., 404, 500, etc.
+          </li>
+          <br><br>
+          <li>
+            <b>type (required)</b>- This is the type of handler to use.  This
+            can be either the &quot;name&quot; attribute of a custom handler
+            defined in the ajax-config.xml file, or a value that begins with
+            &quot;std:&quot;, for instance &quot;std:AlertErrorHandler&quot;.
+            This means it is one of the built-in &quot;standard&quot; APT
+            handlers.
+          </li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ajaxConfig/group/element/event/requestHandler</td>
+      <td>
+        This defines what request handler will be used to service this event.
+        You must specify one and only one of these per event.
+        <br><br>
+        Attributes:
+        <br>
+        <ul>
+          <li>
+            <b>type (required)</b>- This is the type of handler to use.  This
+            can be either the &quot;name&quot; attribute of a custom handler
+            defined in the ajax-config.xml file, or a value that begins with
+            &quot;std:&quot;, for instance &quot;std:QueryString&quot;.  This
+            means it is one of the built-in &quot;standard&quot; APT handlers.
+          </li>
+          <br><br>
+          <li>
+            <b>target (required)</b>- This attribute names the URI to submit the
+            request to.  This can be context-relative or absolute.  For the
+            former, begin with a forward-slash, which will cause the URL
+            rendered in the Javascript to start with the current context path,
+            and then this target will be appended.  For the later, begin with
+            anything other than a forward-slash, in which case this target will
+            be rendered in the Javascript exactly as it appears in the
+            ajax-config.xml file.  <b>Note that URL rewriting is performed on
+            this target, so if cookies are disabled, jsessionid will be
+            appended.</b>
+          <br><br>
+          <li>
+            <b>jsonp (optional)</b>- This can have a value of &quot;true&quot;
+            or &quot;false&quot;, and it will default to false if not present.
+            This enabled JSON-P support (see the
+            <a href="#jsonp">JSON-P Support</a> for details).
+          </li>
+          </li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ajaxConfig/group/element/event/requestHandler/parameter</td>
+      <td>
+        The meaning of this element is specific to the handler being used.  See
+        the &quot;Standard Request/Response Handlers&quot; section below.
+        Note that even if the handler does not use this, the element must still
+        be present!  It is in that case perfectly valid to have
+        &lt;parameter/&gt;.
+        <br><br>
+        Attributes: None.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ajaxConfig/group/element/event/responseHandler</td>
+      <td>
+        This defines what response handler will be used to service this event.
+        You can specify multiple response handlers per event, but at least one
+        must be defined per event.
+        <br><br>
+        Attributes:
+        <br>
+        <ul>
+          <li>
+            <b>type (required)</b>- This is the type of handler to use.  This
+            can be either the &quot;name&quot; attribute of a custom handler
+            defined in the ajax-config.xml file, or a value that begins with
+            &quot;std:&quot;, for instance &quot;std:QueryString&quot;.  This
+            means it is one of the built-in &quot;standard&quot; APT handlers.
+          </li>
+          <br><br>
+          <li>
+            <b>matchPattern (optional)</b>- This attribute is a regex expression
+            that is used to examine the response from the server.  If the
+            response matches this pattern, only then will the response handler
+            fire.  Because you can have multiple response handlers per event,
+            this allows you the possibility of only having certain ones execute,
+            depending on the returned response.  Note that the value of
+            this attribute must be enclosed in / / in your config file.
+          </li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ajaxConfig/group/element/event/responseHandler/parameter</td>
+      <td>
+        The meaning of this element is specific to the handler being used.  See
+        the &quot;Standard Request/Response Handlers&quot; section below.  Note
+        that even if the handler does not use this, the element must still be
+        present!  It is in that case perfectly valid to have &lt;parameter/&gt;.
+        <br><br>
+        Attributes: None.
+      </td>
+    </tr>
+  </table>
+  <br>
+  A word about scope levels...
+  <br><br>
+  The &quot;form&quot;, &quot;async&quot; and &quot;method&quot; attributes
+  mentioned above can be defined in three &quot;scopes&quot;, or levels: group,
+  element and event.  The values defined at higher levels can be overriden by
+  those at lower levels.  So, for instance, if you have the method on a
+  &lt;group&gt; element set to &quot;get&quot;, and you then have the method
+  attribute on an &lt;event&gt; element set to &quot;post&quot;, then for that
+  event, the method used to make the request will be &quot;post&quot;, but
+  for any other events in that group, &quot;get&quot; will be used.
+  <br><br>
+  This also applies to the &lt;errorHandler&gt; elements.  So, if you have
+  an &lt;errorHandler&gt; defined as a child of &lt;group&gt; element to handle
+  404 status codes that uses a particular error handler, you can use a different
+  error handler for that 404 code for a specific event, or for a specific
+  element (i.e., all events under that element would then use the new error
+  handler, while any other elements in the group still use the handler defined
+  for the group).
+  <br><br>
+  <div style="display: none;">TO BE DONE!!!
+  As an example, let's examine an APT configuration file in detail:
+  <br><br>
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  <br><br>
+  EXPLANATION!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  </div>
+  <br><br><br>
+
+  <!-- ******************************************************************** -->
+  <!-- Referencing Configurations                                           -->
+  <!-- ******************************************************************** -->
+  <h2><a name="referencing">-- Referencing Configurations --</a></h2>
+  With the information in the &quot;Configuring APT&quot; section, you should be
+  able to write a AJAX ajax-config.xml file.  One question remains: how do you
+  tie those configuration entries to elements on the page?  The answer is it
+  all revolves around the ajaxRef values.
+  <br><br>
+  When you put an &lt;ajax:event&gt; after an element on a page, that tag
+  accepts a single ajaxRef attribute.  This attribute always has a value in the
+  form xxxx/yyyy, where xxxx is the ajaxRef of a &lt;group&gt; in the
+  ajax-config.xml file, and yyyy is the ajaxRef of an &lt;element&gt; in the
+  ajax-config.xml file.  The groups and elements form a hierarchy, and the
+  ajaxRef of the tag is a path through that hierarchy to a specified
+  &lt;element&gt; configuration.
+  <br><br>
+  <b>Please note that ajaxREFs are ALWAYS case-sensitive! </b>
+  <br><br><br>
+
+  <!-- ******************************************************************** -->
+  <!-- Tag Reference                                                        -->
+  <!-- ******************************************************************** -->
+  <h2><a name="tagref">-- Tag reference --</a></h2>
+  This section contains details on all the custom tags contained in APT.
+  <br><br>
+  <table border="1" cellpadding="2" cellspacing="2" width="98%" align="center">
+  <tr>
+    <td valign="top">&lt;ajax:event/&gt;</td>
+    <td>
+      This is the tag you place IMMEDIATELY after an element on the page you
+      wish to attach an AJAX event to (it only has to be immediately after it
+      if you don't use the attachTo attribute).
+      <br><br>Attributes:<br>
+      <ul>
+        <li>
+          <b>ajaxRef (required)</b>- This is the ajaxRef of the &lt;element&gt;
+          in the ajax-config.xml file to apply to this page element, in the form
+          xxxx/yyyy (see the &quot;Referencing Configurations&quot; section for
+          explanation)
+        </li>
+        <br><br>
+        <li>
+          <b>attachTo (optional)</b>- This is the DOM ID of the element on the
+          page to attach the AJAX event to.  When you use this attribute, the
+          event tag does NOT need to come immediately after the element to
+          AJAX-enable, which it does if you don't use this attribute.  <b>Using
+          this attribute is the new method, and it is the recommended method
+          of using APT.</b>
+        </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">&lt;ajax:enable/&gt;</td>
+    <td>
+      This is the tag that <b>MUST</b> be placed <b>AFTER</b> all
+      &lt;ajax:event/&gt; tags on the page.
+      <br><br>
+      Attributes:
+      <br>
+      <ul>
+        <li>
+          <b>debug (optional, default: &quot;error&quot;)</b>- This sets the
+          level of debugging that will occur on the client-side.  The possible
+          values are &quot;trace&quot;, &quot;debug&quot;,
+          &quot;info&quot;, &quot;error&quot;, &quot;fatal&quot;.  Each value,
+          in that order, will result in less debug messages (i.e., the setting
+          &quot;trace&quot; will result in the most verbose logging, and
+          &quot;fatal&quot; will result in the least.
+        </li>
+        <br><br>
+        <li>
+          <b>logger (optional, default: &quot;JWPAlertLogger&quot;)</b>- This
+          sets the logger that will be used to deal with logging messages.
+          Two loggers a built in: &quot;JWPAlertLogger&quot;, which just
+          dislays logging messages with a Javascript alert(), and
+          &quot;JWPWindowLogger&quot; which opens a new window and writes
+          logging messages to it.
+        </li>
+        <br><br>
+        <li>
+          <b>suppress (optional, default: &quot;false&quot;)</b>- This
+          determines whether the logger and main Javascript object that really
+          is the heart of AjaxParts Taglib on the client is rendered.  This is
+          meant to be set to &quot;true&quot; when you are generating a response
+          to an AJAX request with a JSP, and you want to use AjaxParts Taglib
+          in that JSP.  In that case, since most of the required Javascript is
+          already present on the client, you would not want to render it again
+          as part of the JSP response (and it would likely cause problems if
+          you did).  So, in those situations, you will want to suppress the
+          rendering of that code.  This attribute allows you to do that.
+        </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">&lt;ajax:timer/&gt;</td>
+    <td>
+      This tag sets up a repeating AJAX event on a timer.  Think of things like
+      periodically refreshing a status update, etc.  Note that when you write
+      the configuration for a timer event, it must always be part of a virtual
+      form.  Also note that if the request handler you declare needs a reference
+      to an HTML form, the std;QueryString handler for example, then you
+      <b>MAY NOT</b> use the special value &quot;parent&quot; here!  Note
+      that the default value of the form attribute is in fact
+      &quot;parent&quot;, so an error will occur if you do not override this
+      value with the name or ID of a real form.
+      <br><br>
+      This tag will render two Javascript functions named startXXXX() and
+      stopXXXX(), where XXXX is the ajaxRef, with the slash replaced with an
+      underscore.  For example, for ajaxRef &quot;MyPage/MyButton&quot;, the
+      functions rendered would be startMyPage_MyButton() and
+      stopMyPage_MyButton().  As their names imply, these allow you to manually
+      start and stop the timed event.  Note that if the stop function is called
+      while an AJAX request is in progress, that event will complete, but no
+      further events will fire unless you call the start function.
+      <br><br>
+      Attributes:
+      <br>
+      <ul>
+        <li>
+          <b>ajaxRef (required)</b>- This is the ajaxRef of the &lt;element&gt;
+          in the ajax-config.xml file, in the form xxxx/yyyy (see the
+          &quot;Referencing Configurations&quot; section for explanation) that
+          contains the &lt;event&gt; of type &quot;timer&quot; that defines the
+          AJAX  event the timer will fire.
+        </li>
+        <br><br>
+        <li>
+          <b>frequency (required)</b>- This is the amount of time, in
+          milliseconds, between event firings.  Note that when the timer is
+          started, it will always wait this amount of time before the first
+          firing takes place, even if startOnLoad is &quot;true&quot;
+        </li>
+        <br><br>
+        <li>
+          <b>startOnLoad (optional)</b>- This determines whether a timer will be
+          started automatically when the page loads (when set to
+          &quot;true&quot;), or whether you will take full responsibility for
+          starting the timer (when set to &quot;false&quot;).  The later is good
+          if you want to start the timed event after something else on the page
+          happens, like only start updating a status display after the user
+          clicks a &quot;Start&quot; button for instance.  In this case, you
+          will need to set call the function that starts the timer yourself.
+        </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">&lt;ajax:manual/&gt;</td>
+    <td>
+      This tag is used when you just want the AJAX code rendered on the
+      page but do not want to attach it to any given element.  This is good if
+      you want to do a lot of complex processing around the event, but would
+      rather not have to write the actual AJAX code and also still keep the
+      configuration of the event in the ajax-config.xml file.
+      Also note that if the request handler you declare needs a reference
+      to an HTML form, the std;QueryString handler for example, then you
+      <b>MAY NOT</b> use the special value &quot;parent&quot; here!  Note
+      that the default value of the form attribute is in fact
+      &quot;parent&quot;, so an error will occur if you do not override this
+      value with the name or ID of a real form.
+      <br><br>
+      Attributes:
+      <br>
+      <ul>
+        <li>
+          <b>ajaxRef (required)</b>- This is the ajaxRef of the &lt;element&gt;
+          in the ajax-config.xml file to apply to this manual function, in the
+          form xxxx/yyyy (see the &quot;Referencing Configurations&quot;
+          section for explanation)
+        </li>
+        <br><br>
+        <li>
+          <b>function (required)</b>- This is the name of the Javascript
+          function that will be created for you to call.  You can then call this
+          function at any time to fire the configured AJAX event.
+        </li>
+      </ul>
+    </td>
+  </tr>
+  </table>
+
+  <br><br><br>
+
+  <!-- ******************************************************************** -->
+  <!-- Standard Handlers                                                    -->
+  <!-- ******************************************************************** -->
+  <h2><a name="handlers">-- Standard Handlers --</a></h2>
+  APT ships with a number of handlers built-in, which are termed
+  &quot;standard&quot; handlers.  They are split into the following groups:
+  <br><br>
+  <ul>
+    <li>
+      Request Handlers, those that form a request and send it to the server
+    </li>
+    <br><br>
+    <li>
+      Response handlers, those that take a response from the server and do
+      something with it
+    </li>
+    <br><bR>
+    <li>
+      Error handlers, those that handle a specified HTTP response code
+    </li>
+  </ul>
+  <br>
+  The following tables detail these standard handlers.  Some general notes:
+  <br><br>
+  <ul>
+    <li>
+      Each of the handlers has a child &lt;parameter&gt; element in the
+      ajax-config.xml file, and the meaning of this is specific to each handler.
+      This information is provided below.  Note that if the &lt;parameter&gt;
+      element is not used by the handler, it still <b>MUST</b> be present, but
+      can be empty (i.e., &lt;parameter /&gt;).  If it contains a value anyway,
+      the handler will simply ignore it.
+    </li>
+    <br><br>
+    <li>
+      For each request handler, you will see a note that tells you
+      whether the handler requires a reference to an HTML form or not to do its
+      work.
+    </li>
+    <br><br>
+    <li>
+      Error handlers never require form reference, and do not have parameter
+      elements associated with them.
+    </li>
+    <br><br>
+    <li>
+      All of the standard request handlers use the encodeURIComponent() method
+      to encode parameters, not the escape() method.  Please see
+      <a href="http://xkr.us/articles/javascript/encode-compare/">this reference</a>
+      for details on how characters will be encoded.  Also note that custom
+      handlers may use any method they wish to encode, or none at all, and
+      APT has no say on what such a handler will do.
+    </li>
+  </ul>
+  <br>
+  <table border="1" cellpadding="2" cellspacing="2" width="98%" align="center">
+    <tr><td colspan="2" bgcolor="#e0e0e0"><h3>Request Handlers</h3></td></tr>
+    <tr>
+      <td valign="top">std:QueryString</td>
+      <td>
+        Constructs a query string and sends it to the specified target.
+        <br><br>
+        Requires form reference: Yes
+        <br><br>
+        Parameter:
+        <br><br>
+        A comma-separated list of name-value pairs.  The name is the parameter
+        that will be submitted, the value is the form element to get the value
+        from.  For example: &quot;text1V=text1,text2V=text2&quot; will result in
+        the parameters &quot;text1V&quot; and &quot;text2V&quot; being
+        submitted, with the values of the &quot;text1&quot;
+        and &quot;text2&quot; form fields as their values, respectively.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:SendById</td>
+      <td>
+        Constructs a query string (or POST body) based on explicit elements
+        based on DOM ID and sends it to the specified target.
+        <br><br>
+        Requires form reference: No
+        <br><br>
+        Parameter:
+        <br><br>
+        A comma-separated list.  The first element MUST be the type of request
+        to make, either the value &quot;xml&quot; or &quot;querystring&quot;.
+        If the value is &quot;xml&quot;, then this element must also contain the
+        root node name.  In other words, if you want to send XML and you want
+        the root element to be &quot;person&quot;, then the first element of
+        this CSV list should be &quot;xml.person&quot;.  After that, the
+        elements are in the form X.Y, where X is the DOM ID of the element to
+        get the value from, and Y is the property of that element to read.  So,
+        you can do &quot;myDiv.innerHTML&quot;, or &quot;myDiv.innerText&quot;
+        or &quot;myTextbox.value&quot;, or any other accessible property of the
+        element.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:SimpleRequest</td>
+      <td>
+        Simply submits a request to the server with no data passed along with
+        the request.
+        <br><br>
+        Requires form reference: No
+        <br><br>
+        Parameter:
+        <br><br>
+        None.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:SimpleXML</td>
+      <td>
+        Constructs a simple XML document and sends it to the specified target
+        as a POST body.
+        <br><br>
+        Requires form reference: Yes
+        <br><br>
+        Parameter:
+        <br><br>
+        A comma-separated list of name-value pairs, where the first item is the
+        name of the root element.  For example:
+        &quot;Person,firstName=text1,lastName=test2&quot; will result in the
+        following XML being constructed:
+        <br><br>
+        &lt;Person&gt;<br>
+        &nbsp;&nbsp;&lt;firstName&gt;??&lt;/firstName&gt;<br>
+        &nbsp;&nbsp;&lt;lastName&gt;??&lt;/lastName&gt;<br>
+        &lt;/Person&gt;
+        <br><br>
+        ...where the ?? value of the &lt;firstName&gt; will be the value of the
+        &quot;text1&quot; form field and the ?? value of the &lt;lastName&gt;
+        will be the value of the &quot;text2&quot; form field.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:Poster</td>
+      <td>
+        Submits values as the POST body of the request.  This will obviously
+        only have meaning if the HTTP method is POST.
+        <br><br>
+        Requires form reference: Yes
+        <br><br>
+        Parameter:
+        <br><br>
+        A comma-separated list of name-value pairs.  The name is the parameter
+        that will be submitted, the value is the form element to get the value
+        from.  For example: &quot;text1V=text1,text2V=text2&quot; will result in
+        the parameters &quot;text1V&quot; and &quot;text2V&quot; being
+        submitted, with the values of the &quot;text1&quot;
+        and &quot;text2&quot; form fields as their values, respectively.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:FormSender</td>
+      <td>
+        Submits the contents of a form via either POST or GET, as simple
+        request parameters, JSON or XML.  When you send the form contents as
+        JSON or XML, the HTTP method <b>must</b> be POST... GET <b>will not</b>
+        work!  For plain parameters, either GET or POST will work.
+        <br><br>
+        Requires form reference: Yes
+        <br><br>
+        Parameter:
+        <br><br>
+        One of three values: "parameters", "json" or "xml".  The value
+        "parameters" will send the contents of the form as plain old request
+        parameters.  "json" will send the contents of the form as JSON, when
+        the base object name is the name of the form.  "xml" will send the
+        contents of the form as XML, where the root node is the name of the
+        form.  Note that &lt;select&gt; elements that do no have a value
+        selected will <b>not</b> be transmitted.  This is true for radio
+        elements as well.
+      </td>
+    </tr>
+  </table>
+  <br>
+  <table border="1" cellpadding="2" cellspacing="2" width="98%" align="center">
+    <tr><td colspan="2" bgcolor="#e0e0e0"><h3>Response Handlers</h3></td></tr>
+    <tr>
+      <td valign="top">std:Alerter</td>
+      <td>
+        Pops a Javascript alert() box with the body content of the response.
+        <br><br>
+        Parameter:
+        <br><br>
+        None.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:CodeExecuter</td>
+      <td>
+        This handler assumes the response from the server is a Javascript
+        snippet and executes it.  Note that the response should <b>NOT</b> be
+        wrapped in &lt;script&gt; tags.
+        <br><br>
+        Parameter:
+        <br><br>
+        None.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:IFrameDisplay</td>
+      <td>
+        This handler takes the response from the server and writes it to the
+        document in a named iFrame.  This is essentially the same thing as the
+        std:InnerHTML handler, except that it works with iFrames specifically.
+        <br><br>
+        Parameter:
+        <br><br>
+        The name of an iFrame on the page.  Note that this is the value of the
+        iFrame's name attribute, <b>NOT</b> it's DOM ID attribute!  This can be
+        a comma-separated list of names, in which case all the iFrames will be
+        populated with the same result.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:InnerHTML</td>
+      <td>
+        Sets the innerHTML property of a named element to what the server
+        returns.
+        <br><br>
+        Parameter:
+        <br><br>
+        The DOM ID of an element on the page to update.  This can be a
+        comma-separated list of IDs, in which case all the elements will have
+        their innerHTML properties populated with the same result.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:DoNothing</td>
+      <td>
+        This may seem like a pointless handler, but it really is not, and here's
+        why... any response received by the server, regardless of what response
+        handler(s) you use, will be examined for &lt;script&gt; blocks.  Any
+        that are found will be eval()'d.  This is useful because it is typical
+        to return Javascript as an AJAX response and have it executed on the
+        client.  However, because you must always define at least one response
+        handler per event, if all you want to do is execute returned Javascript,
+        you still need a response handler for the event, but in effect you don't
+        want it to do anything.  That's exactly what this is for!  Note that
+        this and the std;CodeExecuter are very similar, but the primary
+        difference is that std:CodeExecuter assumes the response from the server
+        is Javascript, and executes it, whereas this handler can be used if the
+        response may or may not be Javascript (or the response may or may not
+        include Javascript).  The other difference is that std:CodeExecuter
+        does not require the Javascript to be surrounded by &lt;script&gt; tags,
+        whereas this one would.
+        <br><br>
+        Parameter:
+        <br><br>
+        None.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:Redirecter</td>
+      <td>
+        This handlers assumes the response from the server is a URL, and
+        redirects the client to it.  Alternatively, you can hard-code a URL in
+        the config file, in which case the response is essentially irrelevent,
+        although you still may want to use the matchPattern attribute to
+        conditionally fire this.  This handlers is especially useful for things
+        like session timesouts...  You can have a filter that detects a timed
+        out session and returns the URL to redirect to in that case.  Then, for
+        any AJAX event, configure this as the first response handlers in the
+        response handler chain, and set a matchPattern that will cause
+        it to only execute in response to a redirect event (perhaps if the
+        response begins with &quot;http&quot; for example), or alternatively,
+        hardcoded the URL to redirect to in the config file, and return some
+        status messages when the session is timed out that matchPattern looks
+        for.
+        <br><br>
+        Parameter:
+        <br><br>
+        None, or, the URL to redirect to.  If no value is specified, then the
+        response from the server is assumed to be the URL to redirect to.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:Selectbox</td>
+      <td>
+        This handler populates a &lt;select&gt; element with data returns by the
+        server.  The server process, which you are responsible for, must return
+        XML in the following form:
+        <br><br>
+        &lt;list&gt;<br>
+        &nbsp;&nbsp;&lt;option value=&quot;??&quot;&gt;????&lt;/option&gt;<br>
+        &lt;/list&gt;
+        <br><br>
+        In this structure, ?? is the value attribute of a given &lt;option&gt;
+        element within the &lt;select&gt;, and ???? is the text to go along with
+        the option.
+        <br><br>
+        Parameter:
+        <br><br>
+        The DOM ID (or &quot;name&quot;, both work) of the &lt;select&gt;
+        element to populate.  This can be a comma-separated list of IDs or
+        names, in which case all the &lt;select&gt;'s will be all populated
+        with the same result.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:TextboxArea</td>
+      <td>
+        Sets the text in a textbox or textarea element.
+        <br><br>
+        Parameter:
+        <br><br>
+        The &quot;name&quot; attribute of the form element to set text for.
+        Note that only elements in the SAME form as the element that fired the
+        event can be set!
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:WindowOpener</td>
+      <td>
+        This handler opens the response from the server in a new window.
+        </a>
+        <br><br>
+        Parameter:
+        <br><br>
+        The parameter is composed of two elements, separated by a tilde (~)
+        character.  The first element is the title of the new window.  The
+        second element is a comma-separated list of window options.  Please
+        Google for the window.open() method to see the options available.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:XSLT</td>
+      <td>
+        This handler is capable of transforming XML returned by the server to
+        HTML, or another XML form, or anything else you can do with XSLT.
+        Note that this handler requires use of the Sarissa library available at
+        <a href="http://sarissa.sourceforget.net">
+          http://sarissa.sourceforget.net
+        </a>
+        <br><br>
+        Parameter:
+        <br><br>
+        A comma-separated list where the first element is the DOM ID of an
+        element on the page where output will be displayed (by setting
+        innerHTML), and the second element is the path of the XML file for the
+        XSL Transform.
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">std:FormManipulator</td>
+      <td>
+        This handler populates one or more fields in a form.  Also, it is
+        capable of manipulating the properties of the form and the elements
+        within it.  The server process, which you are responsible for, must
+        return XML in the following form:
+        <br><br>
+        &lt;form name=&quot;AA&quot;&gt;<br>
+        &nbsp;&nbsp;&lt;formproperty name=&quot;BB&quot;
+        value=&quot;CC&quot;/&gt;<br>
+        &nbsp;&nbsp;&lt;element name=&quot;DD&quot; value=&quot;EE&quot;&gt;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&lt;property name=&quot;FF&quot;
+        value=&quot;GG&quot;/&gt;<br>
+        &nbsp;&nbsp;&lt;/element&gt;<br>
+        &lt;/form&gt;
+        <br><br>
+        ...where AA must be the name of the form, BB is the name of the form
+        property (e.g., action) and CC it's new value.  DD must be the name of
+        the element and EE the value you wish to assign to it.  FF is like BB
+        but then for the element's property (e.g., disabled or style.width)
+        and GG the new value for the property.  As you can see it is possible
+        to connect properties with a dot as long as it is possible in
+        Javascript to retrieve them with element[prop1][prop2]!
+        <br><br>
+        Parameter:
+        <br><br>
+        None.
+        </td>
+    </tr>
+  </table>
+  <br>
+  <table border="1" cellpadding="2" cellspacing="2" width="98%" align="center">
+    <tr><td colspan="2" bgcolor="#e0e0e0"><h3>Error Handlers</h3></td></tr>
+    <tr>
+      <td valign="top">std:AlertErrorHandler</td>
+      <td>
+        Pops a Javascript alert() displaying a message formed by taking the
+        response text and status code from the XMLHttpRequest object that
+        processed the event.
+      </td>
+    </tr>
+  </table>
+  <br><br><br>
+
+  <!-- ******************************************************************** -->
+  <!-- Writing Custom Handlers                                              -->
+  <!-- ******************************************************************** -->
+  <h2><a name="custom">-- Writing Custom Handlers --</a></h2>
+  Although APT tries to provide the majority of functionality that you
+  might require with its standard handlers, we recognize that they will not
+  always be sufficient.  With this in mind, the ability to write custom handlers
+  is available to you.
+  <br><br>
+  <ul>
+    <li>
+      <b>Writing REQUEST Handlers</b>
+      <br><br>
+      A request handler function <b>must</b> have the following signature;
+      <br><br>
+      function myCustomRequestHandler(evtDef)
+      <br><br>
+      You can of course name the function whatever you wish, this is just an
+      example.  The evtDef parameter is an associative array that contains all
+      the information about the event that caused this handler to be called.
+      This array contains the following elements:
+      <br><br>
+      <ul>
+        <li>
+          <b>resHandParams</b> - This is an array that itself contains three
+          elements in this order: the type (name) of the response handler, the
+          parameter for the response handler, and the matchPattern for the
+          response handler.  In this way, multiple response handlers can be used
+          for a given event.
+        </li>
+        <br><br>
+        <li>
+          <b>theForm</b> - The name of the HTML form the request handler will
+          use, or null if none.
+        </li>
+        <br><br>
+        <li>
+          <b>targURI</b> - The URI the request will be submitted to.
+        </li>
+        <br><br>
+        <li>
+          <b>reqHandler</b> - The type (name) of the request handler this event
+          will use.
+        </li>
+        <br><br>
+        <li>
+          <b>reqParam</b> - The parameter for the request handler.
+        </li>
+        <br><br>
+        <li>
+          <b>httpMeth</b> - The HTTP method that this handler will use.
+        </li>
+        <br><br>
+        <li>
+          <b>ajaxRef</b> - The ajaxRef of the element firing this event.
+        </li>
+        <br><br>
+        <li>
+          <b>async</b> - True if this request will be fired asynchronously,
+          false if not.
+        </li>
+        <br><br>
+        <li>
+          <b>jsonp</b> - True if this request will be a cross-domain JSON-P
+          request, false if not.
+        </li>
+        <br><br>
+        <li>
+          <b>evtType</b> - The type of the event, i.e., onClick, onBlur, etc.
+        </li>
+        <br><br>
+        <li>
+          <b>preProc</b> - The name of the Javascript pre-processing function to
+          be called before the request is made to the server.
+        </li>
+        <br><br>
+        <li>
+          <b>postProc</b> - The name of the Javascript post-processing function
+          to be called after the request is received from the server, and after
+          all response handlers have fired, and after all &lt;script&gt; blocks
+          in the response have been executed.<br>
+        </li>
+      </ul>
+      <br>
+      In your handler function, you can now do whatever you want.  However, for
+      convenience, you can reuse a number of the facilities the standard
+      handlers use...
+      <br><br>
+      If your handler is really just constructing some custom XML or a query
+      string in some way that the std:QueryString couldn't handle but you don't
+      really want to implement your own actual request sending and handling,
+      you can use the ajaxPartsTaglib.ajaxRequestSender() function.
+      It's signature is as follows:
+      <br><br>
+      ajaxPartsTaglib.ajaxRequestSender(evtDef, pb, qs, xhr, headers)
+      <br><br>
+      The meaning of the parameters are as follows:
+      <br><br>
+      <ul>
+        <li>
+          <b>evtDef</b> - The event definition object for the event.
+        </li>
+        <br><br>
+        <li>
+          <b>pb</b> - XML DOM (or any other content) to submit via POST
+          body, null if none.
+        </li>
+        <br><br>
+        <li>
+          <b>qs</b> - Query string to append, or blank if none.
+        </li>
+        <br><br>
+        <li>
+          <b>xhr</b> - This is an instance of an XMLHttpRequest object, or null.
+          Usually, callers of ajaxPartsTaglib.ajaxRequestSender() will pass null
+          for this parameter, in which case a new XMLHttpRequest object will be
+          instantiated to service the call.  However, in some cases, you may
+          want to manipulate the object yourself.  This allows you the
+          opportunity to do that.  You may also call ajaxPartsTaglib.getXHR()
+          to get a new instance of XMLHttpRequest, which you can then work with
+          as you see fit and pass along to ajaxPartsTaglib.ajaxRequestSender().
+          This is recommended as it deals with cross-browser issues.  Also note
+          that xhr will be null if jsonp was set to true.
+        </li>
+        <br><br>
+        <li>
+          <b>headers</b> - This is an associative array keyed by header name.
+          Because you cannot call setRequestHeaders() on the XMLHttpRequest
+          object until open() has been called, and since this will happen as
+          the last thing ajaxPartsTaglib.ajaxRequestSender() does, it would be
+          impossible to set request headers before then.  Some handlers, such
+          as the std:Poster, need to do this however.  This argument allows you
+          to do so.  Just after open() is called on the XMLHttpRequest instance,
+          this array will be iterated over and the headers it specified, if any,
+          set on the object.  Take a look at the std:Poster request handler to
+          see how this is used.
+      </ul>
+      <br>
+      One other thing ajaxPartsTaglib.ajaxRequestSender() does for you is that
+      it ensures every requested URL is unique.  This is important because IE,
+      and perhaps other browsers, can be a little too aggressive in terms of
+      caching if they are set certain ways.  For example, if IE is set to
+      automatically check for newer versions of a page, then two AJAX events
+      calling the same URL will result in only the first event firing,
+      subsequent requests on the same page will NOT.  This really only applies
+      for GET's, as POST's are never cached by the browser anyway.
+      ajaxPartsTaglib.ajaxRequestSender() deals with this by appending a dummy
+      parameter named assureUnique to the end of every request (as a query
+      string). The value is just a number that is incremented with each request
+      sent. This ensures the URL is always unique.  So if you write a custom
+      handle and do not use ajaxRequestSender(), you will probably want to be
+      sure the URL you send the AJAX request to is unique as wll.
+      <br><br>
+      ajaxPartsTaglib.ajaxRequestSender() also appends the ajaxRef of the
+      element that fired the event, which is helpful for server-side processing
+      based on the element making the request.
+      <br><br>
+      Again, you ARE NOT required to use ajaxPartsTaglib.ajaxRequestSender().
+      You can write your own, or use another library.  In fact, this is true of
+      request, response and error handlers in general.  If you have another
+      library that provides some functionality you want to use, you can create
+      a custom APT handler that is little more than a wrapper function to call
+      the library of your choice.  It's all up to you!
+    </li>
+    <br><br>
+    <li>
+      <b>Writing RESPONSE Handlers</b>
+      <br><br>
+      A response handler function <b>must</b> have the following signature;
+      <br><br>
+      function myCustomResponseHandler(ajCall, resParam)
+      <br><br>
+      You can of course name the function whatever you wish, this is just an
+      example.  The ajCall parameter is an associative array that contains all
+      the information about the AJAX call.  This array contains the following
+      elements:
+      <br><br>
+      <ul>
+        <li>
+          <b>xhr</b> - This is the XMLHttpRequest object instance that handled
+          this request.
+        </li>
+        <br><br>
+        <li>
+          <b>evtDef</b> - This is the evtDef, as described above in the
+          Writing REQUEST Handlers section, that contains all the configuration
+          information for this event.
+        </li>
+        <br><br>
+        <li>
+          <b>pb</b> - This is the POST body that was POST'd to the target
+          URL, if any.
+        </li>
+        <br><br>
+        <li>
+          <b>qs</b> - This is the query string that was sent to the target
+          URL, if any.
+        </li>
+      </ul>
+      <br>
+      The resParam argument is the response handler parameter as defined in the
+      config file.
+      <br><br>
+      Note that a response handler should generally not return anything.  It can
+      however return <b>false</b>, which would result in any subsequent
+      handlers defined for the event to be skipped.  This allows you to break
+      the response handler chain based on what happens in a given custom
+      handler.
+    </li>
+    <br><br>
+    <li>
+      <b>Writing ERROR Handlers</b>
+      <br><br>
+      An error handler function <b>must</b> have the following signature;
+      <br><br>
+      function myCustomErrorHandler(ajCall)
+      <br><br>
+      You can of course name the function whatever you wish, this is just an
+      example.  The ajCall parameter is an associative array that contains all
+      the information about the AJAX call.  This array contains the same
+      content as described above in the &quot;Writing RESPONSE Handlers&quot;
+      section above.
+    </li>
+  </ul>
+
+  <!-- ******************************************************************** -->
+  <!-- General Notes                                                        -->
+  <!-- ******************************************************************** -->
+  <h2><a name="notes">-- General Notes --</a></h2>
+  <ul>
+    <li>
+      Every response retrieved from the server is examined for &lt;script&gt;
+      blocks, and those blocks are eval()'d <b>AFTER</b> all the handlers for
+      the event have been executed, and <b>BEFORE</b> any post-processor
+      function is called.
+    </li>
+    <br><br>
+  </ul>
+
+  <!-- ******************************************************************** -->
+  <!-- JSON-P Support                                                       -->
+  <!-- ******************************************************************** -->
+  <h2><a name="jsonp">-- JSON-P Support --</a></h2>
+  <ul>
+    <li>
+      JSON-P, or JSON with (P)adding, is a mechanism where a response from a
+      service provider via an AJAX call is in the form of JSON wrapped in a
+      caller-specified JavaScript function.  For example, if the data response
+      from the server is...
+      <br><br>
+      { firstName : &quot;Bill&quot;, lastName : &quot;Cosby&quot; }
+      <br><br>
+      ...in JSON-P form, that response might be:
+      <br><br>
+      myCallback({ firstName : &quot;Bill&quot;,
+        lastName : &quot;Cosby&quot; });
+      <br><br>
+      The call is then made via dynamic insertion of a &lt;script&gt; tag
+      into the HTML document where the call is made from.  This causes the
+      browser to perform a fetch of the (presumably) JavaScript resource,
+      and then immediate execution of it upon return, which is a call to the
+      myCallback() function, passing it an object defined by the JSON.
+      <br><br>
+      In APT, when you add the jsonp attribute with a value of true to the
+      &lt;requestHandler&gt; element in the APT config file, that tells APT
+      that you wish to use this dynamic &lt;script&gt; tag trick.  You then
+      have the responsibility of assuring that the href attribute is in
+      the proper form for the service you are calling, including specification
+      of the callback function.  You can use any APT request handler you
+      wish of course to submit the data you need to, which may include dynamic
+      parametered added (one of which could even be the name of the callback
+      function).
+      <br><br>
+      You will almost certainly want to use the standard DoNothing response
+      handler, because the response will be handled automatically in essence
+      by virtue of your callback function being called.  There may be
+      situations where you want to do something else, but it is unlikely (and
+      probably won't work in all but a few very rare situations).  This means
+      that APT's response handlers are all but useless (although you CAN
+      yourself call them, if you ensure they are on the page, and assuming
+      you populate everything that function expects to be populated).
+      <br><br>
+      You should be aware that error handling DOES NOT work when using the
+      dynamic &lt;script&gt; tag trick!  You will have no way to know if your
+      call succeeded or not, nor can you do any post-processing on it.  This is
+      an inherent limitation of the technique employed here.
+    </li>
+    <br><br>
+  </ul>
+
+</body>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT ajaxConfig (handler, group)>
+<!ELEMENT element (errorHandler, event)>
+<!ATTLIST element
+	ajaxRef CDATA #REQUIRED
+	preProc CDATA #IMPLIED
+	postProc CDATA #IMPLIED
+	form CDATA #IMPLIED
+	method (head | get | post | put | delete | trace | options | connect) #IMPLIED
+	async (true | false) #IMPLIED
+>
+<!ELEMENT errorHandler EMPTY>
+<!ATTLIST errorHandler
+	code CDATA #REQUIRED
+	type CDATA #REQUIRED
+>
+<!ELEMENT event (errorHandler, requestHandler, responseHandler)>
+<!ATTLIST event
+	type (onblur | onfocus | onchange | onclick | oncontextmenu | onkeydown | onkeypress | onkeyup | onmousemove | onmouseout | onmouseover | onmouseup | onmousedown | onresize | onscroll | onselect | manual | timer) #REQUIRED
+	preProc CDATA #IMPLIED
+	postProc CDATA #IMPLIED
+	form CDATA #IMPLIED
+	method (head | get | post | put | delete | trace | options | connect) #IMPLIED
+	async (true | false) #IMPLIED
+>
+<!ELEMENT function (#PCDATA)>
+<!ELEMENT group (errorHandler, element)>
+<!ATTLIST group
+	ajaxRef CDATA #REQUIRED
+	preProc CDATA #IMPLIED
+	postProc CDATA #IMPLIED
+	form CDATA #IMPLIED
+	jsonp (true | false) #IMPLIED
+	method (head | get | post | put | delete | trace | options | connect) #IMPLIED
+	async (true | false) #IMPLIED
+>
+<!ELEMENT handler (location, function)>
+<!ATTLIST handler
+	name CDATA #REQUIRED
+	type (request | response | error) #REQUIRED
+>
+<!ELEMENT location (#PCDATA)>
+<!ELEMENT parameter (#PCDATA)>
+<!ELEMENT requestHandler (parameter)>
+<!ATTLIST requestHandler
+	type CDATA #REQUIRED
+	target CDATA #REQUIRED
+>
+<!ELEMENT responseHandler (parameter)>
+<!ATTLIST responseHandler
+	type CDATA #REQUIRED
+>

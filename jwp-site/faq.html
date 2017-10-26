@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Java Web Parts</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" type="text/css" href="styles/base.css" media="all">
+</style>
+</head>
+
+<body>
+<div id="MainPan">
+  <div id="TopPan">
+  <div id="header">
+   <a href="faq.html"><img src="images/logo2.jpg" alt="Java Web Paarts" width="900" height="123" border="0" title="Java Web Paarts" /></a>
+   <p class="slogan">Supplying the wheel, so you don't have to re-invent it!</p>
+  </div>
+  <div id="topbodyleftPan">
+    <ul>
+     <li ><a href="index.html">HOME</a></li>
+     <li ><a href="news.html">PROJECT NEWS</a></li>
+     <li ><a href="http://sourceforge.net/project/showfiles.php?group_id=140728">DOWNLOAD NOW!</a></li>
+     <li ><a href="http://javawebparts.sourceforge.net/javadocs/index.html">JAVADOCS</a></li>
+     <li ><a href="http://javawebparts.wiki.sourceforge.net">WIKI</a></li>
+     <li ><a href="http://sourceforge.net/support/getsupport.php?group_id=140728">GET SUPPORT</a></li>
+     <li ><a href="http://sourceforge.net/mail/?group_id=140728">MAILING LIST</a></li>
+     <li ><a href="http://sourceforge.net/forum/?group_id=140728">MESSAGE FORUMS</a></li>
+     <li ><a href="articles.html">ARTICLES/TUTORIALS</a></li>
+     <li ><a href="faq.html">FAQ</a></li>
+     <li class="second_part"><a href="http://sourceforge.net/projects/javawebparts/">SOURCEFORGE PAGE</a></li>
+     <li ><a href="http://sourceforge.net/project/stats/?group_id=140728&ugn=javawebparts">PROJECT STATISTICS</a></li>
+     <li ><a href="http://javawebparts.svn.sourceforge.net/viewvc/javawebparts">SUBVERSION</a></li>
+     <li ><a href="http://sourceforge.net/tracker/?group_id=140728">TRACKERS</a></li>
+     <li ><a href="contributors.html">CONTRIBUTORS</a></li>
+    </ul>
+  </div>
+  <div id="topbodyrightPan">
+    <h1>FAQs &gt;&gt;&gt;</h1>
+    <h2><img src="images/coffieb.gif" class="illus_b" /> What are the two distribution files? What do I get?</h2>
+    <p><img src="images/coffier.gif" class="illus_r" /> There are two ways to download Java Web Parts: binary only or source
+      package (fairly typical scheme). Regardless of which you choose, you are downloading an exploded webapp.
+      So, you can simply unzip the file into your app server of choice, into webapps under Tomcat for instance,
+      and start'er up and play. Actually, that's not completely accurate... the binary-only distribution will run immediately,
+      the source package you will have to build. Instructions for building from source, such as they are,
+      can be found in the readme in the root of the webapp.
+    </p>
+    <h2><img src="images/coffieb.gif" class="illus" /> How can I build Java Web Parts from source?
+    </h2>
+    <p><img src="images/coffier.gif" class="illus" /> The first question you may want to ask is if you really have a need to do this in
+      the first place. If you don't intend to alter the Java Web Parts code in any way,
+      then just grab the binrary distibution and begin using Java Web Parts right away.
+      If you are going to want to change the code though, then the build procedure is
+      as simple as running Ant in the src folder. What you download, whether binary or source,
+      is actually a webapp. The binary package is all set for you to drop in a servlet container
+      of your choice and play with it. The source package has to be built to get to that point.
+      I currently am using Ant 1.6.1, although any version close to that either way should work fine (let me know if you find any problems!).
+      There are no properties to set or paths to set, it should Just Work(tm).
+   </p>
+   <h2><img src="images/coffieb.gif" class="illus" /> Can Java Web Parts be used as part of another project? How about just pieces of it?
+   </h2>
+   <p><img src="images/coffier.gif" class="illus" /> Bottom-line: YES and YES. The only caveat is that either way you need to
+      leave the copyright notices in all source files intact, and it would be nice to give credit in some documentation for your project,
+      although this is not required. Since JWP is released under the Apache license, and since that license allows for this, who are we
+      to argue?!? But yes, if you want to take one particular class out of JWP and include it in a project of yours, so long as the copyright
+      notices stay in place you are absolutely allowed. But again, credit would be nice (wink-wink... nudge-nudge).
+   </p>
+   <h2><img src="images/coffieb.gif" class="illus" /> What servlet spec, JSP spec and JDK version does Java Web Parts support?
+   </h2>
+   <p><img src="images/coffier.gif" class="illus" /> Java Web Parts is compiled using JDK 1.4.2 and officially supports servlet spec 2.3 and JSP spec 1.2.
+      If you build JWP yourself, it should build with a higher JDK,
+      and it should compile against higher servlet and JSP specs, but these are what are officially supported and used to build the binary distro.
+    </p>
+    <h2><img src="images/coffieb.gif" class="illus" /> Hey, I hear there's an AjaxTags component in JWP, but there's also a separate
+        AjaxTags project. What gives?
+    </h2>
+    <p><img src="images/coffier.gif" class="illus" /> Well, in fact it is called AjaxParts Taglib now, but it was called AjaxTags!
+      AjaxTags began its life as an extension to the Struts HTML taglib. It was Struts-only, and lacked a lot of the functionality and flexibility it has today.
+      This version was unleashed upon the world in April, 2005 (approximately... the memory's a bit flakey these days!). Later on, Frank decided to make it
+      a generic taglib (i.e., not tied to Struts) and bring it under the JWP umbrella. This was in late June, 2005. In about August, 2005,
+      another project appeared on the seen named AjaxTags. This is completely unrelated to the AjaxTags component of JWP! It is just
+      an unfortunate case where two completely separate projects happened to choose the same name. Yes, AjaxTags in JWP
+      (and the Struts-only version before it) would seem to have been first to use the name, but it doesn't really matter in the end.
+      The goal of the projects are quite different... AjaxTags in JWP seeks to give you a much more open-ended Ajax implementation that can
+      allow you to create whatever you want, where the other AjaxTags project seeks to provide ready-made Ajax-based components to drop
+      into your application. In other words, the AjaxTags project is what you could do with the AjaxTags component of JWP yourself if you wanted to.
+      If you have interest in the  other AjaxTags, you can find it at <span class="textlinks"><a href="http://www.ajaxtags.com">the AjaxTags project page.</a></span>
+      I certainly encourge you to look at that project and see if it meets your needs.
+      There is some interesting work being done there, and that work doesn't conflict with AjaxTags in JWP.
+      I know I'm repearing myself, but it's worth driving home... the project have very different goals,
+      and very different potential usage patterns... one may very well fit better than the other in one case, and be the exact opposite in another.
+    </p>
+  </div>
+ </div>
+</div>
+</body>
+</html>

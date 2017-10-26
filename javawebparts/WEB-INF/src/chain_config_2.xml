@@ -1,0 +1,37 @@
+<!-- A Chain configuration file example to go along with the sample app. -->
+<!-- Note that the ChainManager, which is the class responsible for      -->
+<!-- parsing this file, expects to find this file always named           -->
+<!-- chain_config.xml somewhere in the classpath.  In a wenapp this is   -->
+<!-- most easily accomplished by placing it in WEB-INF/classes.  The     -->
+<!-- JWP build script copies this file from WEB-INF/src to               -->
+<!-- WEB-INF/classes as part of its normal processing, that's why this   -->
+<!-- isn't simply in WEB-INf with the other config files.                -->
+<chainConfig>
+
+  <!-- This Catalog demonstrates more advanced functionality.  Catalog2 will -->
+  <!-- contain any Chain defined in Catalog1 because it extends Catalog1. -->
+  <catalog id="catalog2" extendsID="catalog1">
+    <!-- This Chain demonstrates extending another Chain, -->
+    <!-- replacing individual Commands in the Chain and adding to the Chain. -->
+    <chain id="chain2" extendsID="catalog1/chain1">
+      <!-- The following Command overrides an "inherited" Command. -->
+      <command id="add5ToB" className="javawebparts.sampleapp.chain.Add5ToBCommand" replaceID="add1ToB" />
+      <!-- The following Command is added to the end of the Chain. -->
+      <command id="divideBy2" className="javawebparts.sampleapp.chain.DivideBy2Command" />
+    </chain>
+    <!-- This Chain demonstrates a Command redirecting Chain flow.  Command -->
+    <!-- jumpToMultiplByX will jump directly to the multiplyByX Command, -->
+    <!-- effectively skipping the multiplAByB Command -->
+    <chain id="chain3">
+      <command id="add1ToA" className="javawebparts.sampleapp.chain.Add1ToACommand" />
+      <command id="add5ToB" className="javawebparts.sampleapp.chain.Add5ToBCommand" />
+      <command id="addAToB" className="javawebparts.sampleapp.chain.AddAToBCommand" />
+      <command id="jumpToMultiplByX" className="javawebparts.sampleapp.chain.JumpToMultiplByXCommand" />
+      <command id="multiplyAByB" className="javawebparts.sampleapp.chain.MultiplyAByBCommand" />
+      <command id="multiplyByX" className="javawebparts.sampleapp.chain.MultiplyByXCommand">
+        <property id="factor" value="5" />
+      </command>
+    </chain>
+  </catalog>
+
+</chainConfig>
